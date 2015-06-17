@@ -4,9 +4,11 @@ import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.*;
 
@@ -20,7 +22,9 @@ import java.util.List;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class SendToWearableService extends Service{
+public class SendToWearableService extends Service implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
 
     public static final String WEARABLE_DATA_PATH = "/derlin/ivibrate/";
     public static final String SWSERVICE_INTENT_FILTER = "SendToWearableService";
@@ -106,12 +110,12 @@ public class SendToWearableService extends Service{
                 List<Node> nodes = Wearable.NodeApi.getConnectedNodes( mGoogleClient ).await().getNodes();
 
                 // check that at least one wearable is connected
-                if(nodes.size() == 0){
-                    mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, "No wearable connected" ) );
-                    // Log an error
-                    Log.v( "myTag", "ERROR: failed to send DataMap" );
-                    return;
-                }
+//                if(nodes.size() == 0){
+//                    mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, "No wearable connected" ) );
+//                    // Log an error
+//                    Log.v( "myTag", "ERROR: failed to send DataMap" );
+//                    return;
+//                }
 
                 // send datamap
                 for( Node node : nodes ){
@@ -140,7 +144,10 @@ public class SendToWearableService extends Service{
     public GoogleApiClient getGoogleClient(){
 
         if( mGoogleClient == null ){
-            mGoogleClient = new GoogleApiClient.Builder( this ).addApi( Wearable.API )  //
+            mGoogleClient = new GoogleApiClient.Builder( this ) //
+                    .addApi( Wearable.API )  //
+                    .addConnectionCallbacks( this ) //
+                    .addOnConnectionFailedListener( this ) //
                     .build();
             mGoogleClient.connect();
         }
@@ -165,5 +172,22 @@ public class SendToWearableService extends Service{
         i.putExtra( EXTRA_STRING, msg );
         return i;
     }
+
+    // ----------------------------------------------------
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.d( getPackageName(), "connected" );
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause){
+        Log.d( getPackageName(), "suspended" );
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d( getPackageName(), "failed" );
+    }
+
 
 }
