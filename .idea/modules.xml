@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file:///data/Documents/IVibrate/IVibrate.iml" filepath="/data/Documents/IVibrate/IVibrate.iml" />
+      <module fileurl="file:///data/Documents/IVibrate/mobile/mobile.iml" filepath="/data/Documents/IVibrate/mobile/mobile.iml" />
+      <module fileurl="file:///data/Documents/IVibrate/wear/wear.iml" filepath="/data/Documents/IVibrate/wear/wear.iml" />
+    </modules>
+  </component>
+</project>
