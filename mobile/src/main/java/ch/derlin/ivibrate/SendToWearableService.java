@@ -6,11 +6,12 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.Wearable;
+import com.google.android.gms.wearable.*;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -25,25 +26,11 @@ public class SendToWearableService extends Service{
     public static final String SWSERVICE_INTENT_FILTER = "SendToWearableService";
 
     public static final String EXTRA_EVT_TYPE = "evt_type", FAIL_EVT_TYPE = "fail", SUCCESS_EVT_TYPE = "success",
-    EXTRA_STRING =
-            "msg";
+            EXTRA_STRING = "msg";
 
     private static SendToWearableService INSTANCE;
     private LocalBroadcastManager mBroadcastManager;
 
-    // ----------------------------------------------------
-    private ActionCallbacks mCallbacks = new ActionCallbacks(){
-        @Override
-        public void onFail( String errorMsg ){
-            mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, errorMsg ) );
-        }
-
-
-        @Override
-        public void onSuccess( String details ){
-            mBroadcastManager.sendBroadcast( getIntent( SUCCESS_EVT_TYPE, details ) );
-        }
-    };
     // ----------------------------------------------------
 
     public class SendToWearableBinder extends Binder{
@@ -57,17 +44,18 @@ public class SendToWearableService extends Service{
 
     // ----------------------------------------------------
     public interface SendToWearableCallback{
-        public void onFail(String errorMsg);
-        public void onSuccess(String nodeName);
+        public void onFail( String errorMsg );
+
+        public void onSuccess( String nodeName );
     }
     // ----------------------------------------------------
 
     private GoogleApiClient mGoogleClient = null;
 
+
     public static SendToWearableService getInstance(){
         return INSTANCE;
     }
-
 
 
     @Override
@@ -82,13 +70,12 @@ public class SendToWearableService extends Service{
     @Override
     public void onDestroy(){
         INSTANCE = null;
-        if(mGoogleClient != null){
+        if( mGoogleClient != null ){
             mGoogleClient.disconnect();
             mGoogleClient = null;
         }
         super.onDestroy();
     }
-
 
 
     @Override
@@ -97,7 +84,7 @@ public class SendToWearableService extends Service{
     }
 
 
-     /**
+    /**
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
@@ -105,30 +92,73 @@ public class SendToWearableService extends Service{
         DataMap dataMap = new DataMap();
         dataMap.putLongArray( "pattern", pattern );
         dataMap.putLong( "time", new Date().getTime() );
-       new SendToWearableThread( mGoogleClient, WEARABLE_DATA_PATH, dataMap, mCallbacks ).start();
+        broadcastDatamapToWearableNodes( dataMap );
+    }
+
+
+    private void broadcastDatamapToWearableNodes( final DataMap dataMap ){
+        // we need a thread to avoid exceptions calling await
+        new Thread(){
+
+            @Override
+            public void run(){
+
+                List<Node> nodes = Wearable.NodeApi.getConnectedNodes( mGoogleClient ).await().getNodes();
+
+                // check that at least one wearable is connected
+                if(nodes.size() == 0){
+                    mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, "No wearable connected" ) );
+                    // Log an error
+                    Log.v( "myTag", "ERROR: failed to send DataMap" );
+                    return;
+                }
+
+                // send datamap
+                for( Node node : nodes ){
+
+                    // Construct a DataRequest and send over the data layer
+                    PutDataMapRequest putDMR = PutDataMapRequest.create( WEARABLE_DATA_PATH );
+                    putDMR.getDataMap().putAll( dataMap );
+                    PutDataRequest request = putDMR.asPutDataRequest();
+                    DataApi.DataItemResult result = Wearable.DataApi.putDataItem( mGoogleClient, request ).await();
+                    if( result.getStatus().isSuccess() ){
+                        Log.v( "myTag", "DataMap: " + dataMap + " sent to: " + node.getDisplayName() );
+                        mBroadcastManager.sendBroadcast( getIntent( SUCCESS_EVT_TYPE, node.getDisplayName() ) );
+
+                    }else{
+                        mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, "Failed to send pattern to " +
+                                node.getDisplayName() ) );
+                        // Log an error
+                        Log.v( "myTag", "ERROR: failed to send DataMap" );
+                    }
+                }
+            }
+        }.start();
     }
 
 
     public GoogleApiClient getGoogleClient(){
 
         if( mGoogleClient == null ){
-            mGoogleClient = new GoogleApiClient.Builder( this )
-                    .addApi( Wearable.API )  //
+            mGoogleClient = new GoogleApiClient.Builder( this ).addApi( Wearable.API )  //
                     .build();
             mGoogleClient.connect();
         }
         return mGoogleClient;
     }
 
+
     public boolean isConnected(){
         return mGoogleClient.isConnected();
     }
+
 
     protected Intent getIntent( String evtType ){
         Intent i = new Intent( SWSERVICE_INTENT_FILTER );
         i.putExtra( EXTRA_EVT_TYPE, evtType );
         return i;
     }
+
 
     protected Intent getIntent( String evtType, String msg ){
         Intent i = getIntent( evtType );
