@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.processors;
 
 import static ch.derlin.ivibrate.GcmConstants.*;
 

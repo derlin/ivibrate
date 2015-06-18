@@ -17,6 +17,8 @@
  */
 package ch.derlin.ivibrate;
 
+import ch.derlin.ivibrate.processors.IPayloadProcessor;
+import ch.derlin.ivibrate.processors.ProcessorFactory;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -32,10 +34,7 @@ import org.json.simple.parser.ParseException;
 import org.xmlpull.v1.XmlPullParser;
 
 import javax.net.ssl.SSLSocketFactory;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -197,8 +196,8 @@ public class CcsClient{
      * Sends a message to multiple recipients. Kind of like the old
      * HTTP message with the list of regIds in the "registration_ids" field.
      */
-    public void sendBroadcast( Map<String, String> payload, String collapseKey, long timeToLive, Boolean
-            delayWhileIdle, List<String> recipients ){
+    public void sendBroadcast( Collection<String> recipients, Map<String, String> payload, String collapseKey, Long
+            timeToLive, Boolean delayWhileIdle ){
         Map map = createAttributeMap( null, null, payload, collapseKey, timeToLive, delayWhileIdle );
         for( String toRegId : recipients ){
             String messageId = getRandomMessageId();
@@ -207,6 +206,11 @@ public class CcsClient{
             String jsonRequest = createJsonMessage( map );
             send( jsonRequest );
         }
+    }
+
+
+    public void sendBroadcast( Collection<String> recipients, Map<String, String> payload ){
+        this.sendBroadcast( recipients, payload, null, null, false );
     }
 
     /// new: customized version of the standard handleIncomingDateMessage method
@@ -229,7 +233,7 @@ public class CcsClient{
      *
      */
     private CcsMessage getMessage( Map<String, Object> jsonObject ){
-        String from = jsonObject.get( FROM_KEY ).toString();
+        String from = jsonObject.get( "from" ).toString();
 
         // PackageName of the application that sent this message.
         String category = jsonObject.get( CATEGORY_KEY ).toString();
@@ -255,7 +259,7 @@ public class CcsClient{
      */
     public void handleAckReceipt( Map<String, Object> jsonObject ){
         String messageId = jsonObject.get( MESSAGE_ID_KEY ).toString();
-        String from = jsonObject.get( FROM_KEY ).toString();
+        String from = jsonObject.get( "from" ).toString();
         logger.log( Level.INFO, "handleAckReceipt() from: " + from + ", messageId: " + messageId );
     }
 
@@ -269,7 +273,7 @@ public class CcsClient{
      */
     public void handleNackReceipt( Map<String, Object> jsonObject ){
         String messageId = jsonObject.get( MESSAGE_ID_KEY ).toString();
-        String from = jsonObject.get( FROM_KEY ).toString();
+        String from = jsonObject.get( "from" ).toString();
         logger.log( Level.INFO, "handleNackReceipt() from: " + from + ", messageId: " + messageId );
     }
 
@@ -501,10 +505,14 @@ public class CcsClient{
         // Send a sample hello downstream message to a device.
         String messageId = ccsClient.getRandomMessageId();
         Map<String, String> payload = new HashMap<String, String>();
-        payload.put( "message", "Simple sample sessage" );
+        payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
+        payload.put( MESSAGE_KEY, "Simple sample sessage" );
+        payload.put( FROM_KEY, "prout lala" );
+
         String collapseKey = "sample";
         Long timeToLive = 10000L;
         Boolean delayWhileIdle = true;
+
         ccsClient.send( createJsonMessage( toRegId, messageId, payload, collapseKey, timeToLive, delayWhileIdle ) );
     }
 }

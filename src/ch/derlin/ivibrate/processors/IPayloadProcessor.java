@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.processors;
+
+
+import ch.derlin.ivibrate.CcsMessage;
 
 /**
- * Handles a user registration.
+ * All messages from the user have a specific format.
+ * The Action field defines, what the action is about. An example
+ * is the action com.grokkingandroid.sampleapp.samples.gcm.action.REGISTER, 
+ * used to tell the server about a newly registered user.
+ * <br>
+ * Any further fields are specific for the given action.
  */
-public class RegisterProcessor implements IPayloadProcessor{
-
-    @Override
-    public void handleMessage( CcsMessage msg ){
-        String accountName = msg.getPayload().get( "account" );
-        PseudoDao.getInstance().addRegistration( msg.getFrom(), accountName );
-    }
-
+public interface IPayloadProcessor{
+    
+    void handleMessage( CcsMessage msg );
+    
 }

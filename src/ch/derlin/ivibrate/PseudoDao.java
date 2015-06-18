@@ -15,14 +15,7 @@
  */
 package ch.derlin.ivibrate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class acts as a DAO replacement. There is no
@@ -37,10 +30,10 @@ public class PseudoDao{
     private final static PseudoDao instance = new PseudoDao();
     private final static Random sRandom = new Random();
     private final Set<Integer> mMessageIds = new HashSet<Integer>();
-    private final Map<String, List<String>> mUserMap = new HashMap<String, List<String>>();
-    private final List<String> mRegisteredUsers = new ArrayList<String>();
-    private final Map<String, String> mNotificationKeyMap = new HashMap<String, String>();
+    private final Map<String, String> mUserMap = new HashMap<String, String>();
+    private final Map<String, String> mReverseUserMap = new HashMap<String, String>();
 
+    private final String user_file_name = "users.txt";
 
     private PseudoDao(){
     }
@@ -51,48 +44,31 @@ public class PseudoDao{
     }
 
 
-    public void addRegistration( String regId, String accountName ){
-        synchronized( mRegisteredUsers ){
-            if( !mRegisteredUsers.contains( regId ) ){
-                mRegisteredUsers.add( regId );
+    public boolean addRegistration( String regId, String accountName ){
+        synchronized( this ){
+            if( accountName != null && !mUserMap.containsKey( accountName ) ){
+                mUserMap.put( accountName, regId );
+                mReverseUserMap.put( regId, accountName );
+                return true;
             }
-            if( accountName != null ){
-                List<String> regIdList = mUserMap.get( accountName );
-                if( regIdList == null ){
-                    regIdList = new ArrayList<String>();
-                    mUserMap.put( accountName, regIdList );
-                }
-                if( !regIdList.contains( regId ) ){
-                    regIdList.add( regId );
-                }
-            }
+            return false;
         }
     }
 
 
-    public List<String> getAllRegistrationIds(){
-        return Collections.unmodifiableList( mRegisteredUsers );
+    public Collection<String> getRegistrationIds(){
+        return Collections.unmodifiableCollection( mUserMap.values() );
     }
 
 
-    public List<String> getAllRegistrationIdsForAccount( String account ){
-        List<String> regIds = mUserMap.get( account );
-        if( regIds != null ){
-            return Collections.unmodifiableList( regIds );
-        }
-        return null;
+    public String getRegistrationId( String account ){
+        return mUserMap.containsKey( account ) ? mUserMap.get( account ) : null;
     }
 
 
-    public String getNotificationKeyName( String accountName ){
-        return mNotificationKeyMap.get( accountName );
+    public String getAccount( String regId ){
+        return mReverseUserMap.containsKey( regId ) ? mReverseUserMap.get( regId ) : null;
     }
-
-
-    public void storeNotificationKeyName( String accountName, String notificationKeyName ){
-        mNotificationKeyMap.put( accountName, notificationKeyName );
-    }
-
 
     public Set<String> getAccounts(){
         return Collections.unmodifiableSet( mUserMap.keySet() );

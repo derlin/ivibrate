@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.processors;
+
+import ch.derlin.ivibrate.CcsClient;
+import ch.derlin.ivibrate.GcmConstants;
+import ch.derlin.ivibrate.PseudoDao;
+
+import java.util.Map;
 
 /**
  * Handles an echo request.
@@ -24,12 +30,16 @@ public class MessageProcessor implements IPayloadProcessor{
     public void handleMessage( ch.derlin.ivibrate.CcsMessage msg ){
         try{
             PseudoDao dao = PseudoDao.getInstance();
-            CcsClient client = CcsClient.getInstance();
-            String msgId = dao.getUniqueMessageId();
             String account = msg.getPayload().get( GcmConstants.TO_KEY );
-            String to = PseudoDao.getInstance().getAllRegistrationIdsForAccount( account ).get( 0 );
-            String jsonRequest = CcsClient.createJsonMessage( to, msgId, msg.getPayload() );
-            client.send( jsonRequest );
+
+            String to = PseudoDao.getInstance().getRegistrationId( account );
+
+            Map<String, String> payload = msg.getPayload();
+            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
+            payload.put( GcmConstants.FROM_KEY, dao.getAccount( msg.getFrom() ) );
+            String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
+            CcsClient.getInstance().send( jsonRequest );
+
         }catch( Exception e ){
             System.err.println( "Error " + e );
         }
