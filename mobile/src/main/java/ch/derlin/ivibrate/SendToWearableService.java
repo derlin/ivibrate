@@ -47,12 +47,6 @@ public class SendToWearableService extends Service implements
     private final IBinder mBinder = new SendToWearableBinder();
 
     // ----------------------------------------------------
-    public interface SendToWearableCallback{
-        public void onFail( String errorMsg );
-
-        public void onSuccess( String nodeName );
-    }
-    // ----------------------------------------------------
 
     private GoogleApiClient mGoogleClient = null;
 

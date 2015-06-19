@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    package="ch.derlin.ivibrate"
+<manifest package="ch.derlin.ivibrate"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.VIBRATE" />
-
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
@@ -13,19 +12,26 @@
     <permission
         android:name="com.hmkcode.android.gcm.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
+
     <uses-permission android:name="com.hmkcode.android.gcm.permission.C2D_MESSAGE" />
 
-
     <application
-        android:name=".App"
+        android:name=".app.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name" />
+
+        <activity
+            android:name=".PatternActivity"
+            android:label="Create pattern" />
+
+        <activity
+            android:name=".start.StartActivity"
+            android:label="Start activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,30 +39,31 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".PatternActivity"
-            android:label="Create pattern" />
-
-        <!--communication with the watch-->
+        <!-- communication with the watch -->
         <service
             android:name=".SendToWearableService"
             android:exported="false" />
 
-        <!--gcm-->
+        <!-- gcm -->
         <receiver
             android:name=".gcm.GcmListener"
             android:permission="com.google.android.c2dm.permission.SEND">
-            <!--listen to message from GCM-->
+
+            <!-- listen to message from GCM -->
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
                 <category android:name="com.hmkcode.android.gcm" />
             </intent-filter>
         </receiver>
 
-        <!--handle a new message received by the GcmReceived-->
+        <!-- handle a new message received by the GcmReceived -->
         <service android:name=".gcm.GcmIntentService" />
 
-
+        <service
+            android:name=".gcm.GcmSenderService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

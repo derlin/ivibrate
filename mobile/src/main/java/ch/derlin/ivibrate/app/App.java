@@ -1,8 +1,10 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.app;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import ch.derlin.ivibrate.SendToWearableService;
+import ch.derlin.ivibrate.gcm.GcmSenderService;
 
 /**
  * Created by lucy on 17/06/15.
@@ -23,8 +25,8 @@ public class App extends Application{
         super.onCreate();
 
         appContext = this.getApplicationContext();
-        Intent i = new Intent( this, SendToWearableService.class );
-        this.startService( i );
+        this.startService( new Intent( this, SendToWearableService.class ) );
+        this.startService( new Intent( this, GcmSenderService.class ) );
 
     }
 
@@ -32,6 +34,7 @@ public class App extends Application{
     @Override
     public void onTerminate(){
         this.stopService( new Intent( this, SendToWearableService.class ) );
+        this.stopService( new Intent( this, GcmSenderService.class ) );
         super.onTerminate();
     }
 }
