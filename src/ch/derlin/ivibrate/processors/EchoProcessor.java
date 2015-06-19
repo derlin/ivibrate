@@ -18,7 +18,7 @@ package ch.derlin.ivibrate.processors;
 import ch.derlin.ivibrate.CcsClient;
 import ch.derlin.ivibrate.CcsMessage;
 import ch.derlin.ivibrate.GcmConstants;
-import ch.derlin.ivibrate.PseudoDao;
+import ch.derlin.ivibrate.sql.AccountsManager;
 
 import java.util.Map;
 
@@ -29,7 +29,7 @@ public class EchoProcessor implements IPayloadProcessor{
 
     @Override
     public void handleMessage( CcsMessage msg ){
-        PseudoDao dao = PseudoDao.getInstance();
+        AccountsManager dao = AccountsManager.getInstance();
         Map<String, String> payload = msg.getPayload();
         payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_ECHO );
         String jsonRequest = CcsClient.createJsonMessage( msg.getFrom(), dao.getUniqueMessageId(), payload );

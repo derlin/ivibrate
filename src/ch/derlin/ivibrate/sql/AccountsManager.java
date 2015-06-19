@@ -10,21 +10,25 @@ import java.util.*;
 public class AccountsManager{
 
     private static final String DB_PATH = "mysqlitedb.db";
-    private static final String ACCOUNT_TABLE = "ACCOUNT";
+    private static final String ACCOUNT_TABLE = "ACCOUNTS";
     private static final String COL_REGID = "REGID";
     private static final String COL_NAME = "NAME";
-    private static final String COL_PHONE = "PHONE";
 
     private final static Random sRandom = new Random();
     private final Set<Integer> mMessageIds = new HashSet<>();
 
-    private static final AccountsManager INSTANCE = new AccountsManager();
+    private static AccountsManager INSTANCE;
 
-    private Map<String, Account> users = new HashMap<>();
-    private Map<String, Account> regIds = new HashMap<>();
+    private Map<String, String> users = new HashMap<>();
+    private Map<String, String> regIds = new HashMap<>();
 
 
     public static void main( String args[] ){
+        System.out.println( new AccountsManager().getNames() );
+    }
+
+
+    private static void initDB(){
         Connection c;
         Statement stmt;
         try{
@@ -35,10 +39,9 @@ public class AccountsManager{
             stmt = c.createStatement();
             String sql = String.format( "CREATE TABLE %s " +  //
                             "(%s TEXT PRIMARY KEY     NOT NULL," +  //
-                            " %s  TEXT NOT NULL, " +
-                            " %s TEXT NOT NULL, " +
+                            " %s TEXT UNIQUE NOT NULL, " +
                             " TIMESTAMP DATETIME default CURRENT_TIMESTAMP)", //
-                    ACCOUNT_TABLE, COL_REGID, COL_NAME, COL_PHONE );
+                    ACCOUNT_TABLE, COL_REGID, COL_NAME );
 
             stmt.executeUpdate( sql );
             stmt.close();
@@ -55,23 +58,24 @@ public class AccountsManager{
 
 
     public static AccountsManager getInstance(){
+        if( INSTANCE == null ) INSTANCE = new AccountsManager();
         return INSTANCE;
     }
 
 
     private AccountsManager(){
         try{
-            Class.forName("org.sqlite.JDBC");
+            Class.forName( "org.sqlite.JDBC" );
             Connection c = getConnection();
             Statement stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery( String.format( "SELECT * FROM %s;", ACCOUNT_TABLE) );
+            ResultSet rs = stmt.executeQuery( String.format( "SELECT * FROM %s;", ACCOUNT_TABLE ) );
 
             while( rs.next() ){
-                Account account = new Account( //
-                        rs.getString( "regid" ), rs.getString( "name" ), rs.getString( "phone" ) );
+                String regid = rs.getString( COL_REGID );
+                String name = rs.getString( COL_NAME );
 
-                users.put( account.getPhoneNumber(), account );
-                regIds.put( account.getRegId(), account );
+                users.put( name, regid );
+                regIds.put( regid, name );
             }
             rs.close();
             stmt.close();
@@ -92,21 +96,22 @@ public class AccountsManager{
     }
 
 
-    public String getRegistrationId( String phone ){
-        return users.containsKey( phone ) ? users.get( phone ).getRegId() : null;
+    public String getRegistrationId( String name ){
+        return users.containsKey( name ) ? users.get( name ) : null;
     }
 
 
-    public Account getAccount( String regId ){
+    public String getName( String regId ){
         return regIds.containsKey( regId ) ? regIds.get( regId ) : null;
     }
 
 
-    public Collection<Account> getAccounts(){
-        return Collections.unmodifiableCollection( users.values() );
+    public Collection<String> getNames(){
+        return Collections.unmodifiableCollection( users.keySet() );
     }
 
     // ----------------------------------------------------
+
 
     public String getUniqueMessageId(){
         int nextRandom = sRandom.nextInt();
@@ -120,32 +125,30 @@ public class AccountsManager{
     // ----------------------------------------------------
 
 
-    public synchronized boolean addAccount(Account account){
+    public synchronized boolean addAccount( String name, String regid ){
 
-        if(regIds.containsKey( account.getRegId() )){
+        if( regIds.containsKey( regid ) ){
             return false;
         }
 
-        try {
+        try{
             Connection c = getConnection();
             Statement stmt = c.createStatement();
 
-            String sql = String.format( "INSERT INTO %s(%s, %s, %s) VALUES('%s', '%s', '%s')", //
-                    ACCOUNT_TABLE, COL_REGID, COL_NAME, COL_PHONE,  //
-                    account.getRegId(), account.getName(), account.getPhoneNumber()
-                    );
+            String sql = String.format( "INSERT INTO %s(%s, %s) VALUES('%s', '%s')", //
+                    ACCOUNT_TABLE, COL_REGID, COL_NAME,  //
+                    regid, name );
 
-            stmt.executeUpdate(sql);
+            stmt.executeUpdate( sql );
             stmt.close();
-            c.commit();
             c.close();
 
-            users.put( account.getPhoneNumber(), account );
-            regIds.put( account.getRegId(), account );
+            users.put( name, regid );
+            regIds.put( regid, name );
 
-            System.out.println( account.getName() + " added to db." );
+            System.out.println( name + " added to db." );
             return true;
-        } catch ( Exception e ) {
+        }catch( Exception e ){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
             System.exit( 0 );
         }
@@ -154,38 +157,40 @@ public class AccountsManager{
 
     // ----------------------------------------------------
 
-    public synchronized boolean removeAccount(Account account){
 
-        if(!regIds.containsKey( account.getRegId() )){
+    public synchronized boolean removeAccount( String regid ){
+
+        String name = regIds.get( regid );
+
+        if( name == null ){
             return false;
         }
 
-        try {
+        try{
             Connection c = getConnection();
             Statement stmt = c.createStatement();
 
-            String sql = String.format( "DELETE FROM %s WHERE %s = '%s')", //
-                    ACCOUNT_TABLE, COL_REGID, account.getRegId()
-            );
+            String sql = String.format( "DELETE FROM %s WHERE %s = '%s'", //
+                    ACCOUNT_TABLE, COL_REGID, regid );
 
             stmt.executeUpdate( sql );
             stmt.close();
-            c.commit();
             c.close();
 
-            users.remove( account.getPhoneNumber() );
-            regIds.remove( account.getRegId() );
+            users.remove( name );
+            regIds.remove( regid );
 
-            System.out.println(account.getName() + " removed from db.");
+            System.out.println( name + " removed from db." );
             return true;
-        } catch ( Exception e ) {
+        }catch( Exception e ){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-            System.exit(0);
+            System.exit( 0 );
         }
         return false;
     }
 
     // ----------------------------------------------------
+
 
     private static Connection getConnection() throws SQLException{
         return DriverManager.getConnection( "jdbc:sqlite:" + DB_PATH );

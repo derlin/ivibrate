@@ -19,7 +19,7 @@ package ch.derlin.ivibrate.processors;
 import ch.derlin.ivibrate.CcsClient;
 import ch.derlin.ivibrate.CcsMessage;
 import ch.derlin.ivibrate.GcmConstants;
-import ch.derlin.ivibrate.PseudoDao;
+import ch.derlin.ivibrate.sql.AccountsManager;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,10 +31,10 @@ public class UnregisterProcessor implements IPayloadProcessor{
 
     @Override
     public void handleMessage( CcsMessage msg ){
-        PseudoDao dao = PseudoDao.getInstance();
+        AccountsManager dao = AccountsManager.getInstance();
         String accountName = msg.getPayload().get( GcmConstants.MESSAGE_KEY );
 
-        if(dao.removeAccount( accountName )){
+        if(dao.removeAccount( msg.getFrom() )){
             Map<String, String> payload = msg.getPayload();
             payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_UNREGISTER );
             payload.put( GcmConstants.ACCOUNTS_KEY, accountName );
