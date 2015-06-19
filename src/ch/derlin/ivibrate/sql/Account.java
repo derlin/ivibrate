@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.sql;
 
 /**
  * @author: Lucy Linder
@@ -8,6 +8,13 @@ public class Account{
     String regId;
     String name;
     String phoneNumber;
+
+
+    public Account( String regId, String name, String phoneNumber ){
+        this.regId = regId;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+    }
 
 
     public String getRegId(){
