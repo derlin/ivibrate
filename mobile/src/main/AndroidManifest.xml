@@ -22,7 +22,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             android:label="@string/app_name" />
 
         <activity
@@ -41,7 +41,7 @@
 
         <!-- communication with the watch -->
         <service
-            android:name=".SendToWearableService"
+            android:name=".wear.SendToWearableService"
             android:exported="false" />
 
         <!-- gcm -->
@@ -63,7 +63,7 @@
         <service
             android:name=".gcm.GcmSenderService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
     </application>
 
 </manifest>

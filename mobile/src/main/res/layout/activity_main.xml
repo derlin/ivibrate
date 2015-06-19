@@ -25,7 +25,7 @@
     <!-- android:layout_marginTop="?android:attr/actionBarSize"-->
     <fragment
         android:id="@+id/fragment_drawer"
-        android:name="ch.derlin.ivibrate.NavigationDrawerFragment"
+        android:name="ch.derlin.ivibrate.main.drawer.NavigationDrawerFragment"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"

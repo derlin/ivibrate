@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.main.drawer;
 
 
 import android.graphics.drawable.Drawable;

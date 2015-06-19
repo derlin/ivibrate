@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.main;
 
 
 import android.os.Bundle;
@@ -9,6 +9,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+import ch.derlin.ivibrate.main.frag.NotificationFragment;
+import ch.derlin.ivibrate.R;
+import ch.derlin.ivibrate.main.drawer.NavigationDrawerCallbacks;
+import ch.derlin.ivibrate.main.drawer.NavigationDrawerFragment;
 
 import java.util.ArrayList;
 import java.util.List;

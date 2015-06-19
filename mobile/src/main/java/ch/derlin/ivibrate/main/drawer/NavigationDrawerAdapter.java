@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.main.drawer;
 
 
 import android.support.v7.widget.RecyclerView;
@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import ch.derlin.ivibrate.R;
 
 import java.util.List;
 

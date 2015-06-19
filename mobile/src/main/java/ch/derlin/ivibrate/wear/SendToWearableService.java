@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.wear;
 
 import android.app.IntentService;
 import android.app.Service;

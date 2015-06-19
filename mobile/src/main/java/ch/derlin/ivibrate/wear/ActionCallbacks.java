@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.wear;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
-import static ch.derlin.ivibrate.SendToWearableService.*;
+import static ch.derlin.ivibrate.wear.SendToWearableService.*;
 
 /**
  * Created by lucy on 17/06/15.

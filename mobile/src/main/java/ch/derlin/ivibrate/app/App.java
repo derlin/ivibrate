@@ -3,7 +3,7 @@ package ch.derlin.ivibrate.app;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import ch.derlin.ivibrate.SendToWearableService;
+import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 
 /**
@@ -12,7 +12,6 @@ import ch.derlin.ivibrate.gcm.GcmSenderService;
 public class App extends Application{
 
     static Context appContext;
-
 
     public static Context getAppContext(){
         return appContext;

@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.main.frag;
 
 
 import android.app.Activity;
@@ -10,6 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
+import ch.derlin.ivibrate.PatternActivity;
+import ch.derlin.ivibrate.R;
+import ch.derlin.ivibrate.wear.ActionCallbacks;
+import ch.derlin.ivibrate.wear.SendToWearableService;
 
 import java.util.Arrays;
 
