@@ -26,6 +26,8 @@ public class ProcessorFactory{
         }
         if( action.equals( ACTION_REGISTER ) ){
             return new RegisterProcessor();
+        }else if( action.equals( ACTION_UNREGISTER ) ){
+            return new UnregisterProcessor();
         }else if( action.equals( ACTION_ECHO ) ){
             return new EchoProcessor();
         }else if( action.equals( ACTION_MESSAGE ) ){

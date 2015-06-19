@@ -15,6 +15,9 @@
  */
 package ch.derlin.ivibrate;
 
+
+import gson.GsonUtils;
+
 import java.util.*;
 
 /**
@@ -26,16 +29,22 @@ import java.util.*;
  * recipients for proper apps!
  */
 public class PseudoDao{
+    private static final String usersFileName = "users_file.txt";
 
+    private MapsContainer maps;
     private final static PseudoDao instance = new PseudoDao();
     private final static Random sRandom = new Random();
     private final Set<Integer> mMessageIds = new HashSet<Integer>();
-    private final Map<String, String> mUserMap = new HashMap<String, String>();
-    private final Map<String, String> mReverseUserMap = new HashMap<String, String>();
 
-    private final String user_file_name = "users.txt";
+
+    public static void main( String[] args ){
+        // initialise file
+        GsonUtils.writeJsonFile( usersFileName, new MapsContainer() );
+    }//end main
+
 
     private PseudoDao(){
+        load();
     }
 
 
@@ -44,11 +53,25 @@ public class PseudoDao{
     }
 
 
-    public boolean addRegistration( String regId, String accountName ){
+    public boolean addUser( String regId, String accountName ){
         synchronized( this ){
-            if( accountName != null && !mUserMap.containsKey( accountName ) ){
-                mUserMap.put( accountName, regId );
-                mReverseUserMap.put( regId, accountName );
+            if( accountName != null && !maps.users.containsKey( accountName ) ){
+                maps.users.put( accountName, regId );
+                maps.tokenIds.put( regId, accountName );
+                saveToFile();
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+    public boolean removeAccount( String accountName ){
+        synchronized( this ){
+            if( accountName != null && maps.users.containsKey( accountName ) ){
+                maps.tokenIds.remove( maps.users.get( accountName ) );
+                maps.users.remove( accountName );
+                saveToFile();
                 return true;
             }
             return false;
@@ -57,21 +80,22 @@ public class PseudoDao{
 
 
     public Collection<String> getRegistrationIds(){
-        return Collections.unmodifiableCollection( mUserMap.values() );
+        return Collections.unmodifiableCollection( maps.users.values() );
     }
 
 
     public String getRegistrationId( String account ){
-        return mUserMap.containsKey( account ) ? mUserMap.get( account ) : null;
+        return maps.users.containsKey( account ) ? maps.users.get( account ) : null;
     }
 
 
-    public String getAccount( String regId ){
-        return mReverseUserMap.containsKey( regId ) ? mReverseUserMap.get( regId ) : null;
+    public String getAccountName( String regId ){
+        return maps.tokenIds.containsKey( regId ) ? maps.tokenIds.get( regId ) : null;
     }
 
-    public Set<String> getAccounts(){
-        return Collections.unmodifiableSet( mUserMap.keySet() );
+
+    public Set<String> getAccountNames(){
+        return Collections.unmodifiableSet( maps.users.keySet() );
     }
 
 
@@ -82,4 +106,28 @@ public class PseudoDao{
         }
         return Integer.toString( nextRandom );
     }
+
+    // ----------------------------------------------------
+
+
+    private void saveToFile(){
+        if(!GsonUtils.writeJsonFile( usersFileName, this.maps )){
+            System.err.println( "Could not serialise map" );
+        }
+
+    }
+
+
+    private void load(){
+        MapsContainer maps = ( MapsContainer ) GsonUtils.getJsonFromFile( usersFileName, new MapsContainer() );
+        if( maps != null ) this.maps = maps;
+    }
+
+    // ----------------------------------------------------
+
+    static class MapsContainer{
+        final Map<String, String> users = new HashMap<String, String>();
+        final Map<String, String> tokenIds = new HashMap<String, String>();
+    }
+
 }

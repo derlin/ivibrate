@@ -5,8 +5,9 @@ package ch.derlin.ivibrate;
  * @date: 17.06.2015
  */
 public class GcmConstants{
-    public static final String PACKAGE = "ch.derlin.gcm";
     public static final String PROJECT_ID = "621732101176";
+
+    public static final String PACKAGE = "ch.derlin.gcm";
     public static final String MESSAGE_ID_KEY = "message_id";
     public static final String TO_KEY = "to";
     public static final String FROM_KEY = "from_account"; // from is a reserved keyword
@@ -18,10 +19,10 @@ public class GcmConstants{
     public static final String ACTION_KEY = "action";
 
     public static final String ACTION_REGISTER = PACKAGE + ".REGISTER";
+    public static final String ACTION_UNREGISTER = PACKAGE + ".UNREGISTER";
     public static final String ACTION_ECHO = PACKAGE + ".ECHO";
     public static final String ACTION_MESSAGE = PACKAGE + ".MESSAGE";
     public static final String ACTION_GET_ACCOUNTS = PACKAGE + ".GET_ACCOUNTS";
-    public static final String ACTION_NEW_REG = "new_reg";
 
     public static final String MESG_TYPE_KEY = "message_type";
     public static final String MESG_TYPE_ACK = "ack";

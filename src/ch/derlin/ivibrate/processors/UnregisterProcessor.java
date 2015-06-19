@@ -21,24 +21,27 @@ import ch.derlin.ivibrate.CcsMessage;
 import ch.derlin.ivibrate.GcmConstants;
 import ch.derlin.ivibrate.PseudoDao;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
  * Handles a user registration.
  */
-public class RegisterProcessor implements IPayloadProcessor{
+public class UnregisterProcessor implements IPayloadProcessor{
 
     @Override
     public void handleMessage( CcsMessage msg ){
-        String accountName = msg.getPayload().get( GcmConstants.MESSAGE_KEY );
         PseudoDao dao = PseudoDao.getInstance();
+        String accountName = msg.getPayload().get( GcmConstants.MESSAGE_KEY );
 
-        if(dao.addUser( msg.getFrom(), accountName )){
-
+        if(dao.removeAccount( accountName )){
             Map<String, String> payload = msg.getPayload();
-            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_REGISTER );
+            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_UNREGISTER );
             payload.put( GcmConstants.ACCOUNTS_KEY, accountName );
-            CcsClient.getInstance().sendBroadcast( dao.getRegistrationIds(), payload );
+            Collection<String> registrationIds = dao.getRegistrationIds();
+            CcsClient.getInstance().sendBroadcast( registrationIds, payload );
+             // also notify the sender
+             CcsClient.getInstance().send( CcsClient.createJsonMessage( msg.getFrom(), dao.getUniqueMessageId(), payload ) );
         }
     }
 

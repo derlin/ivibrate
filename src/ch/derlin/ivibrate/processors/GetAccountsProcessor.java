@@ -18,7 +18,7 @@ public class GetAccountsProcessor implements IPayloadProcessor{
     public void handleMessage( CcsMessage msg ){
         PseudoDao dao = PseudoDao.getInstance();
 
-        Set<String> accounts = PseudoDao.getInstance().getAccounts();
+        Set<String> accounts = PseudoDao.getInstance().getAccountNames();
         StringBuilder builder = new StringBuilder(  );
         for( String account : accounts ){
             builder.append( account ).append( "," );

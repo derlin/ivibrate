@@ -19,6 +19,8 @@ package ch.derlin.ivibrate;
 
 import ch.derlin.ivibrate.processors.IPayloadProcessor;
 import ch.derlin.ivibrate.processors.ProcessorFactory;
+import com.google.gson.reflect.TypeToken;
+import gson.GsonUtils;
 import org.jivesoftware.smack.*;
 import org.jivesoftware.smack.ConnectionConfiguration.SecurityMode;
 import org.jivesoftware.smack.filter.PacketTypeFilter;
@@ -29,12 +31,13 @@ import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.provider.PacketExtensionProvider;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.util.StringUtils;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
 import org.xmlpull.v1.XmlPullParser;
 
 import javax.net.ssl.SSLSocketFactory;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -272,9 +275,7 @@ public class CcsClient{
      * to properly handle NACKS.
      */
     public void handleNackReceipt( Map<String, Object> jsonObject ){
-        String messageId = jsonObject.get( MESSAGE_ID_KEY ).toString();
-        String from = jsonObject.get( "from" ).toString();
-        logger.log( Level.INFO, "handleNackReceipt() from: " + from + ", messageId: " + messageId );
+        logger.log( Level.INFO, "handleNackReceipt() " + GsonUtils.toJson( jsonObject ) );
     }
 
 
@@ -303,7 +304,7 @@ public class CcsClient{
 
 
     public static String createJsonMessage( Map map ){
-        return JSONValue.toJSONString( map );
+        return GsonUtils.toJson( map );
     }
 
 
@@ -344,7 +345,7 @@ public class CcsClient{
         message.put( MESG_TYPE_KEY, MESG_TYPE_ACK );
         message.put( TO_KEY, to );
         message.put( MESSAGE_ID_KEY, messageId );
-        return JSONValue.toJSONString( message );
+        return GsonUtils.toJson( message );
     }
 
     /// new: NACK added
@@ -364,7 +365,7 @@ public class CcsClient{
         message.put( MESG_TYPE_KEY, MESG_TYPE_NACK );
         message.put( TO_KEY, to );
         message.put( MESSAGE_ID_KEY, messageId );
-        return JSONValue.toJSONString( message );
+        return GsonUtils.toJson( message );
     }
 
 
@@ -433,14 +434,14 @@ public class CcsClient{
                 String json = gcmPacket.getJson();
                 try{
                     @SuppressWarnings( "unchecked" )
-                    Map<String, Object> jsonMap = ( Map<String, Object> ) JSONValue.parseWithException( json );
+                    Map<String, Object> jsonMap = ( Map<String, Object> ) GsonUtils.fromJson( json, new
+                            TypeToken<Map<String, Object>>(){}.getType() );
 
                     handleMessage( jsonMap );
-                }catch( ParseException e ){
-                    logger.log( Level.SEVERE, "Error parsing JSON " + json, e );
                 }catch( Exception e ){
-                    logger.log( Level.SEVERE, "Couldn't send echo.", e );
+                    logger.log( Level.SEVERE, "Error parsing JSON " + json, e );
                 }
+
             }
         }, new PacketTypeFilter( Message.class ) );
 
@@ -477,6 +478,7 @@ public class CcsClient{
         }else if( MESG_TYPE_ACK.equals( messageType.toString() ) ){
             // Process Ack
             handleAckReceipt( jsonMap );
+
         }else if( MESG_TYPE_NACK.equals( messageType.toString() ) ){
             // Process Nack
             handleNackReceipt( jsonMap );

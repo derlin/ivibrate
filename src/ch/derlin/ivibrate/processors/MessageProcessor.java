@@ -36,7 +36,7 @@ public class MessageProcessor implements IPayloadProcessor{
 
             Map<String, String> payload = msg.getPayload();
             payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
-            payload.put( GcmConstants.FROM_KEY, dao.getAccount( msg.getFrom() ) );
+            payload.put( GcmConstants.FROM_KEY, dao.getAccountName( msg.getFrom() ) );
             String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
             CcsClient.getInstance().send( jsonRequest );
 
