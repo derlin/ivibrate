@@ -1,11 +1,10 @@
 package ch.derlin.ivibrate.start;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.*;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -17,11 +16,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import ch.derlin.ivibrate.main.MainActivity;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
+import ch.derlin.ivibrate.main.MainActivity;
+import ch.derlin.ivibrate.wear.SendToWearableService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
@@ -51,10 +50,24 @@ public class StartActivity extends FragmentActivity{
         }
     };
 
+    private ServiceConnection mConnection = new ServiceConnection(){
+        @Override
+        public void onServiceConnected( ComponentName name, IBinder service ){
+            setInterface();
+        }
+
+
+        @Override
+        public void onServiceDisconnected( ComponentName name ){
+
+        }
+    };
+
 
     @Override
     protected void onDestroy(){
         mCallbacks.unregisterSelf( this );
+        unbindService( mConnection );
         super.onDestroy();
     }
 
@@ -62,6 +75,8 @@ public class StartActivity extends FragmentActivity{
     @Override
     protected void onStart(){
         super.onStart();
+        Intent intent = new Intent(this, GcmSenderService.class);
+        bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
         mCallbacks.registerSelf( this );
     }
 
@@ -80,21 +95,33 @@ public class StartActivity extends FragmentActivity{
         // .", true );
         //        }
 
-        phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ),
-                null );
+        phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ), null );
 
+//        setInterface();
+
+    }
+
+    protected void setInterface(){
 
         if( phone != null ){
+            while(GcmSenderService.getInstance() == null){
+                try{
+                    Thread.sleep( 100 );
+                }catch( InterruptedException e ){
+                    e.printStackTrace();
+                }
+            }; // wait for the app to start TODO
             GcmSenderService.getInstance().registerToServer( phone );
-            launchMainActivity();
-        }
 
-        if( !checkNetwork() ){
-            showErrorDialog( "You need an internet connection to register.", true );
-        }
+        }else{
 
-        setContentView( R.layout.activity_start );
-        getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new PhoneFragment() ).commit();
+            if( !checkNetwork() ){
+                showErrorDialog( "You need an internet connection to register.", true );
+            }
+
+            setContentView( R.layout.activity_start );
+            getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new PhoneFragment() ).commit();
+        }
     }
 
 
@@ -113,6 +140,7 @@ public class StartActivity extends FragmentActivity{
         } );
         alertDialog.show();
     }
+
 
 
     private void launchMainActivity(){

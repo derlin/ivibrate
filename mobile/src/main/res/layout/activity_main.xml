@@ -23,12 +23,12 @@
             android:clickable="true" />
     </LinearLayout>
     <!-- android:layout_marginTop="?android:attr/actionBarSize"-->
-    <fragment
-        android:id="@+id/fragment_drawer"
-        android:name="ch.derlin.ivibrate.main.drawer.NavigationDrawerFragment"
-        android:layout_width="@dimen/navigation_drawer_width"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:layout_marginTop="@dimen/abc_action_bar_default_height_material"
-        app:layout="@layout/fragment_navigation_drawer" />
+    <!--<fragment-->
+        <!--android:id="@+id/fragment_drawer"-->
+        <!--android:name="ch.derlin.ivibrate.main.drawer.NavigationDrawerFragment"-->
+        <!--android:layout_width="@dimen/navigation_drawer_width"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_gravity="start"-->
+        <!--android:layout_marginTop="@dimen/abc_action_bar_default_height_material"-->
+        <!--app:layout="@layout/fragment_navigation_drawer" />-->
 </android.support.v4.widget.DrawerLayout>

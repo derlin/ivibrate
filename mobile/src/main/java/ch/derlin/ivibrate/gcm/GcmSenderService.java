@@ -9,12 +9,16 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import ch.derlin.ivibrate.R;
+import ch.derlin.ivibrate.app.App;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
@@ -24,6 +28,8 @@ public class GcmSenderService extends Service{
     private static GcmSenderService INSTANCE;
     private String regid;
     private Gson gson = new GsonBuilder().create();
+    private static Random random = new Random();
+    private Set<Integer> msgIdSet = new HashSet<>();
 
     // ----------------------------------------------------
     public class GcmSenderBinder extends Binder{
@@ -102,13 +108,15 @@ public class GcmSenderService extends Service{
         sendData( data );
     }
 
+
     public void askForAccounts(){
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, GcmConstants.ACTION_GET_ACCOUNTS );
         sendData( data );
     }
 
-    public void sendMessage(String to, long[] pattern){
+
+    public void sendMessage( String to, long[] pattern ){
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, GcmConstants.ACTION_MESSAGE );
         data.putString( TO_KEY, to );
@@ -117,20 +125,23 @@ public class GcmSenderService extends Service{
     }
 
 
-    public void sendEcho(long[] pattern){
+    public void sendEcho( long[] pattern ){
         sendEcho( gson.toJson( pattern ) );
     }
 
-    public void sendEcho(String message){
+
+    public void sendEcho( String message ){
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, GcmConstants.ACTION_ECHO );
         data.putString( MESSAGE_KEY, message );
-        sendData(data);
+        sendData( data );
     }
 
+
     public void sendData( Bundle data ){
+        data.putString( REGID_KEY, regid ); // always put regid
         try{
-            String id = Integer.toString( new Random().nextInt() );
+            String id = getMessageId();
             gcm.send( PROJECT_ID + "@gcm.googleapis.com", id, data );
 
         }catch( IOException e ){
@@ -139,14 +150,31 @@ public class GcmSenderService extends Service{
     }
 
 
+    private String getMessageId(){
+        int id;
+        do{
+            id = random.nextInt();
+        }while( msgIdSet.contains( id ) );
+
+        msgIdSet.add( id );
+        return Integer.toString( id );
+    }
+
+
     private void loadRegIdAsync(){
-        new AsyncTask<Void,Void,Void>(){
+        new AsyncTask<Void, Void, Void>(){
 
             @Override
-            protected Void doInBackground(Void ... params){
+            protected Void doInBackground( Void... params ){
                 String msg;
                 try{
-                    String regid = gcm.register( GcmConstants.PROJECT_ID );
+                    String authorizedEntity = PROJECT_ID; // Project id from Google Developers Console
+                    String scope = "GCM"; // e.g. communicating using GCM, but you can use any
+                    // URL-safe characters up to a maximum of 1000, or
+                    // you can also leave it blank.
+                    regid = InstanceID.getInstance( App.getAppContext() ).getToken( authorizedEntity, scope );
+
+                    //                    String regid = gcm.register( GcmConstants.PROJECT_ID );
                     PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).edit() //
                             .putString( getString( R.string.pref_regid ), regid ).commit();
                     msg = "Device registered to GCM server, registration ID=" + regid;

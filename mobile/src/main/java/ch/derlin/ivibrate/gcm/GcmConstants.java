@@ -9,6 +9,7 @@ public class GcmConstants{
     public static final String PACKAGE = "ch.derlin.gcm";
     public static final String TO_KEY = "to";
     public static final String FROM_KEY = "from_account"; // from is a reserved keyword
+    public static final String REGID_KEY = "regid";
     public static final String ACCOUNTS_KEY = "accounts";
     public static final String MESSAGE_KEY = "message";
 

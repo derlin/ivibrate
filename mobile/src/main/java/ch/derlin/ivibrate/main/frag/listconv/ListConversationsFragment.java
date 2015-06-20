@@ -2,17 +2,19 @@ package ch.derlin.ivibrate.main.frag.listconv;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.SqlDataSource;
+import ch.derlin.ivibrate.sql.entities.Friend;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -65,19 +67,21 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
         mList = ( ListView ) view.findViewById( R.id.listView );
         mList.setOnItemClickListener( this );
         setHasOptionsMenu( true );
-        loadData();
+        (( ActionBarActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled( false );
+        getActivity().setTitle("Conversations");
+        loadData(getActivity());
 
         return view;
     }
 
 
-    private void loadData(){
+    private void loadData(final Context context){
         new AsyncTask<Void, Void, Map<String, Friend>>(){
 
             @Override
             protected Map<String, Friend> doInBackground( Void... params ){
 
-                try( SqlDataSource src = new SqlDataSource( getActivity(), true ) ){
+                try( SqlDataSource src = new SqlDataSource( context, true ) ){
                     return src.getFriends();
                 }catch( SQLException e ){
                     Log.d( getActivity().getPackageName(), "Error retrieving data: " + e );

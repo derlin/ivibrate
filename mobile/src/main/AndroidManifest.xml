@@ -54,7 +54,6 @@
             <!-- listen to message from GCM -->
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-
                 <category android:name="com.hmkcode.android.gcm" />
             </intent-filter>
         </receiver>
