@@ -24,7 +24,13 @@ public class AccountsManager{
 
 
     public static void main( String args[] ){
-        System.out.println( new AccountsManager().getNames() );
+        //        initDB();
+        AccountsManager am = new AccountsManager();
+        System.out.println( am.getNames() );
+        //        am.addAccount( "0795490041", "agnes-regid" );
+        //        am.addAccount( "0792458829", "maman-regid" );
+        //        am.addAccount( "0787394184", "papa-regid" );
+        //        System.out.println("done");
     }
 
 
@@ -127,8 +133,9 @@ public class AccountsManager{
 
     public synchronized boolean addAccount( String name, String regid ){
 
-        if( regIds.containsKey( regid ) ){
-            return false;
+        if( users.containsKey( name ) ){
+            if( users.get( name ).equals( regid ) ) return true;
+            return updateRegid( name, regid );
         }
 
         try{
@@ -150,8 +157,44 @@ public class AccountsManager{
             return true;
         }catch( Exception e ){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-            System.exit( 0 );
+            //            System.exit( 0 );
         }
+        return false;
+    }
+
+
+    // ----------------------------------------------------
+
+
+    public synchronized boolean updateRegid( String name, String regid ){
+
+        if( name == null ){
+            return false;
+        }
+
+        try{
+            Connection c = getConnection();
+            Statement stmt = c.createStatement();
+
+            String sql = String.format( "UPDATE %s SET %s = '%s' WHERE %s = '%s'", //
+                    ACCOUNT_TABLE, COL_NAME, name, COL_REGID, regid );
+
+            stmt.executeUpdate( sql );
+            stmt.close();
+            c.close();
+
+            // replace old regid with new one
+            regIds.remove( users.get( name ) );
+            regIds.put( regid, name );
+            users.put( name, regid );
+
+            System.out.println( name + " updated." );
+            return true;
+
+        }catch( Exception e ){
+            System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+        }
+
         return false;
     }
 
@@ -184,7 +227,6 @@ public class AccountsManager{
             return true;
         }catch( Exception e ){
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
-            System.exit( 0 );
         }
         return false;
     }
