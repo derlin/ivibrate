@@ -11,7 +11,7 @@ import static ch.derlin.ivibrate.wear.SendToWearableService.*;
 /**
  * Created by lucy on 17/06/15.
  */
-public abstract class ActionCallbacks extends BroadcastReceiver{
+public abstract class WearableCallbacks extends BroadcastReceiver{
 
     private static final IntentFilter INTENT_FILTER = new IntentFilter( SWSERVICE_INTENT_FILTER );
 

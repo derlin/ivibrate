@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import ch.derlin.ivibrate.sql.entities.Friend;
+import ch.derlin.ivibrate.sql.entities.Message;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,12 +29,12 @@ public class SqlDataSource implements AutoCloseable{
 
 
     public SqlDataSource( Context context ){
-        helper = new SqlHelper( context );
+        helper = SqlHelper.getInstance( context );
     }
 
 
     public SqlDataSource( Context context, boolean autoOpen ) throws SQLException{
-        helper = new SqlHelper( context );
+        helper = SqlHelper.getInstance( context );
         if( autoOpen ) this.open();
     }
 
@@ -44,6 +46,7 @@ public class SqlDataSource implements AutoCloseable{
 
 
     public void close(){
+        db.close();
         helper.close();
     }
 
@@ -66,7 +69,10 @@ public class SqlDataSource implements AutoCloseable{
         while( !cursor.isAfterLast() ){
             Friend f = cursorToFriend( cursor );
             map.put( f.getPhone(), f );
+            cursor.moveToNext();
         }//end while
+
+        cursor.close();
 
         return map;
     }
@@ -88,9 +94,12 @@ public class SqlDataSource implements AutoCloseable{
 
         cursor.moveToFirst();
 
-        while( cursor.isAfterLast() ){
+        while( !cursor.isAfterLast() ){
             list.add( cursorToMessage( cursor ) );
+            cursor.moveToNext();
         }
+
+        cursor.close();
 
         return list;
     }
@@ -113,7 +122,6 @@ public class SqlDataSource implements AutoCloseable{
     private static ContentValues friendToContentValues( Friend friend ){
         ContentValues values = new ContentValues();
         values.put( F_COL_PHONE, friend.getPhone() );
-        values.put( F_COL_CONTACT_ID, friend.getContactId() );
         return values;
     }
 
@@ -132,7 +140,6 @@ public class SqlDataSource implements AutoCloseable{
     private static Friend cursorToFriend( Cursor c ){
         Friend f = new Friend();
         f.setPhone( c.getString( c.getColumnIndex( F_COL_PHONE ) ) );
-        f.setContactId( c.getLong( c.getColumnIndex( F_COL_CONTACT_ID ) ) );
         return f;
     }
 

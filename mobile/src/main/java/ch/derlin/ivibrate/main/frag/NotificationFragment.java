@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import ch.derlin.ivibrate.PatternActivity;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.wear.ActionCallbacks;
+import ch.derlin.ivibrate.wear.WearableCallbacks;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class NotificationFragment extends Fragment implements View.OnClickListen
 
     public static final int PATTERN_REQUEST_CODE = 1984;
 
-    private ActionCallbacks mCallbacks = new ActionCallbacks(){
+    private WearableCallbacks mCallbacks = new WearableCallbacks(){
 
         @Override
         public void onFail( String errorMsg ){

@@ -14,9 +14,13 @@ public class SqlHelper extends SQLiteOpenHelper{
     public static final String DB_NAME = "ivibrate.db";
     public static final int DB_VERSION = 1;
 
+
     public static final String F_TABLE_NAME = "friends";
-    public static final String F_COL_PHONE = "";
-    public static final String F_COL_CONTACT_ID = "";
+    public static final String F_COL_PHONE = "phone";
+
+    //    public static final String[] F_ALL_COLS = new String[]{   //
+    //        F_COL_PHONE, F_COL_CONTACT_ID
+    //    };
 
     public static final String P_TABLE_NAME = "patterns";
     public static final String P_COL_ID = "id";
@@ -28,10 +32,8 @@ public class SqlHelper extends SQLiteOpenHelper{
 
     private static final String CREATE_FRIENDS_TABLE = String.format(  //
             "CREATE TABLE %s(" +   //
-                    "%s TEXT NOT NULL PRIMARY KEY," + //
-                    "%s INTEGER  " + //
-                    ");", //
-            F_TABLE_NAME, F_COL_PHONE, F_COL_CONTACT_ID );
+                    "%s TEXT NOT NULL PRIMARY KEY );", //
+            F_TABLE_NAME, F_COL_PHONE );
 
     private static final String CREATE_PATTERNS_TABLE = String.format(  //
             "CREATE TABLE %s(" +   //
@@ -45,10 +47,20 @@ public class SqlHelper extends SQLiteOpenHelper{
 
 
     // ----------------------------------------------------
+    private static SqlHelper INSTANCE;
 
-    public SqlHelper( Context context ){
+
+    public static synchronized SqlHelper getInstance( Context context ){
+        if( INSTANCE == null ) INSTANCE = new SqlHelper( context );
+        return INSTANCE;
+    }
+    // ----------------------------------------------------
+
+
+    private SqlHelper( Context context ){
         super( context, DB_NAME, null, DB_VERSION );
     }
+
 
     @Override
     public void onCreate( SQLiteDatabase db ){

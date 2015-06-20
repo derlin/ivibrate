@@ -19,7 +19,7 @@ public class PatternActivity extends ActionBarActivity implements View.OnTouchLi
     Button cancelButton, nextButton;
     List<Long> pattern = new ArrayList<>();
     long lastTouch;
-
+    Bundle bundle;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ){
@@ -28,6 +28,8 @@ public class PatternActivity extends ActionBarActivity implements View.OnTouchLi
         patternView = findViewById( R.id.pattern_view );
         cancelButton = ( Button ) findViewById( R.id.buttonLeft );
         nextButton = ( Button ) findViewById( R.id.buttonRight );
+
+        bundle = getIntent().getExtras();
 
         patternView.setOnTouchListener( this );
         cancelButton.setOnClickListener( this );
@@ -97,6 +99,7 @@ public class PatternActivity extends ActionBarActivity implements View.OnTouchLi
         }else{
             Intent intent = new Intent();
             intent.putExtra( "pattern", patternToPrimitiveArray() );
+            if(bundle != null) intent.putExtras( bundle );
             setResult( RESULT_OK, intent );
 
         }

@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate.sql;
+package ch.derlin.ivibrate.sql.entities;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
