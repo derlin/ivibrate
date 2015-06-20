@@ -10,7 +10,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
@@ -21,7 +20,6 @@ import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.drawer.NavigationDrawerCallbacks;
-import ch.derlin.ivibrate.main.drawer.NavigationDrawerFragment;
 import ch.derlin.ivibrate.main.frag.listconv.ListConversationsFragment;
 import ch.derlin.ivibrate.main.frag.oneconv.OneConvFragment;
 import ch.derlin.ivibrate.sql.SqlDataSource;
@@ -44,7 +42,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
      */
-    private NavigationDrawerFragment mNavigationDrawerFragment;
+//    private NavigationDrawerFragment mNavigationDrawerFragment;
     private Toolbar mToolbar;
     private ListConversationsFragment mListConvFragment;
     private List<LocalContactDetails> mAvailableContacts;
@@ -98,7 +96,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
         }
     }
 
-
+ /*
     @Override
     public void onBackPressed(){
         if( mNavigationDrawerFragment.isDrawerOpen() ){
@@ -120,7 +118,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
         }
         return super.onCreateOptionsMenu( menu );
     }
-
+ */
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item ){

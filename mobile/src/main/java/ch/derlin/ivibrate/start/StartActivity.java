@@ -96,7 +96,7 @@ public class StartActivity extends FragmentActivity{
         //        }
 
         phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ), null );
-
+        setContentView( R.layout.activity_start );
 //        setInterface();
 
     }
@@ -119,7 +119,7 @@ public class StartActivity extends FragmentActivity{
                 showErrorDialog( "You need an internet connection to register.", true );
             }
 
-            setContentView( R.layout.activity_start );
+
             getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new PhoneFragment() ).commit();
         }
     }
