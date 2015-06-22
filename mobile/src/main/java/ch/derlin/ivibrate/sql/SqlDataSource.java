@@ -82,9 +82,19 @@ public class SqlDataSource implements AutoCloseable{
      * Messages
      * ****************************************************************/
     public boolean addMessage( Message message ){
-        return db.insert( P_TABLE_NAME, null, messageToContentValues( message ) ) > 0;
+        long ret =  db.insert( P_TABLE_NAME, null, messageToContentValues( message ) );
+        if(ret > 0){
+            message.setId( ret );
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
+    public boolean deleteMessage(Message message){
+        return db.delete( P_TABLE_NAME, P_COL_ID + "= ?", new String[]{"" + message.getId()} ) > 0;
+    }
 
     public List<Message> getMessagesWith( String phone ){
         List<Message> list = new ArrayList<>();
@@ -146,7 +156,7 @@ public class SqlDataSource implements AutoCloseable{
 
     private Message cursorToMessage( Cursor cursor ){
         Message m = new Message();
-        m.setId( cursor.getInt( cursor.getColumnIndex( P_COL_ID ) ) );
+        m.setId( cursor.getLong( cursor.getColumnIndex( P_COL_ID ) ) );
         m.setDate( cursor.getString( cursor.getColumnIndex( P_COL_DATE ) ) );
         m.setPattern( cursor.getString( cursor.getColumnIndex( P_COL_PATTERN ) ) );
         m.setPhone_contact( cursor.getString( cursor.getColumnIndex( P_COL_PHONE ) ) );

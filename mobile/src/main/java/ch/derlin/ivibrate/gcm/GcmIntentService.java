@@ -3,20 +3,19 @@ package ch.derlin.ivibrate.gcm;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
+import ch.derlin.ivibrate.app.App;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
 public class GcmIntentService extends IntentService{
 
-    public static final String GCM_SERVICE_INTENT_FILTER = "GCM_SERVICE";
-    String mes;
-    private Handler handler;
+
+
     private LocalBroadcastManager mBroadcastManager;
+    private GcmCallbacks mCallbacks = new IntentServiceCallbacks();
 
 
     public GcmIntentService(){
@@ -27,8 +26,15 @@ public class GcmIntentService extends IntentService{
     @Override
     public void onCreate(){
         super.onCreate();
+        mCallbacks.registerSelf( App.getAppContext() );
         mBroadcastManager = LocalBroadcastManager.getInstance( this );
-        handler = new Handler();
+    }
+
+
+    @Override
+    public void onDestroy(){
+        mCallbacks.unregisterSelf( App.getAppContext() );
+        super.onDestroy();
     }
 
 
@@ -51,7 +57,7 @@ public class GcmIntentService extends IntentService{
             Log.d( getPackageName(), "NEW MESSGAGE: " + messageType + " " + extras.toString() );
             // this is a real message
             String action = extras.getString( MESG_TYPE_KEY );
-            if(action == null) return; // TODO
+            if( action == null ) return; // TODO
             mBroadcastManager.sendBroadcast( getIntent( action, extras ) );
         }
 
@@ -65,6 +71,7 @@ public class GcmIntentService extends IntentService{
     protected Intent getIntent( String evtType ){
         Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
         i.putExtra( EXTRA_EVT_TYPE, evtType );
+//        mCallbacks.onReceive( App.getAppContext(), i );
         return i;
     }
 
@@ -72,17 +79,11 @@ public class GcmIntentService extends IntentService{
     protected Intent getIntent( String evtType, Bundle bundle ){
         Intent i = getIntent( evtType );
         i.putExtras( bundle );
+//        mCallbacks.onReceive( App.getAppContext(), i );
         return i;
     }
 
-    public void showToast(){
-        handler.post( new Runnable(){
-            public void run(){
-                Toast.makeText( getApplicationContext(), mes, Toast.LENGTH_LONG ).show();
-            }
-        } );
-
-    }
-
-
 }
+
+
+

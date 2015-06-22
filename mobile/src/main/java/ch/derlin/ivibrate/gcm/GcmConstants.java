@@ -5,6 +5,7 @@ package ch.derlin.ivibrate.gcm;
  */
 public class GcmConstants{
     public static final String PROJECT_ID = "621732101176";
+    public static final String GCM_SERVICE_INTENT_FILTER = "GCM_SERVICE";
 
     public static final String PACKAGE = "ch.derlin.gcm";
     public static final String TO_KEY = "to";
@@ -18,7 +19,8 @@ public class GcmConstants{
     public static final String ACTION_REGISTER = PACKAGE + ".REGISTER";
     public static final String ACTION_UNREGISTER = PACKAGE + ".UNREGISTER";
     public static final String ACTION_ECHO = PACKAGE + ".ECHO";
-    public static final String ACTION_MESSAGE = PACKAGE + ".MESSAGE";
+    public static final String ACTION_MESSAGE_RECEIVED = PACKAGE + ".MESSAGE";
+    public static final String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     public static final String ACTION_GET_ACCOUNTS = PACKAGE + ".GET_ACCOUNTS";
 
     public static final String MESG_TYPE_KEY = "message_type";

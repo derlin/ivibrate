@@ -1,7 +1,7 @@
 package ch.derlin.ivibrate.sql.entities;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import ch.derlin.ivibrate.app.App;
+import ch.derlin.ivibrate.app.AppUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,23 +16,21 @@ public class Message{
     public static final String SENT_MSG = "sent";
     public static final String RECEIVED_MSG = "received";
 
-    private static final Gson gson = new GsonBuilder().create();
-
-    int id;
+    Long id;
     String phone_contact;
-    String pattern;
+    long[] pattern;
     Date date;
     String dir;
 
     // ----------------------------------------------------
 
 
-    public int getId(){
+    public Long getId(){
         return id;
     }
 
 
-    public void setId( int id ){
+    public void setId( Long id ){
         this.id = id;
     }
 
@@ -48,12 +46,17 @@ public class Message{
 
 
     public String getPattern(){
+        return App.getGson().toJson( pattern );
+    }
+
+
+    public long[] getPatternObject(){
         return pattern;
     }
 
 
     public void setPattern( String pattern ){
-        this.pattern = pattern;
+        this.pattern = AppUtils.getPatternFromString( pattern );
     }
 
 
@@ -111,7 +114,7 @@ public class Message{
         Message m = new Message();
         m.phone_contact = friend;
         m.date = new Date();
-        m.pattern = gson.toJson( pattern );
+        m.pattern = pattern;
 
         return m;
     }

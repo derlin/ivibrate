@@ -14,4 +14,9 @@
     <string name="pref_regid">pref_regid</string>
     <string name="pref_phone">pref_phone</string>
     <string name="main_activity_label">main activity</string>
+
+    <string-array name="oneconv_context_menu">
+        <item>Replay</item>
+        <item>Delete</item>
+    </string-array>
 </resources>

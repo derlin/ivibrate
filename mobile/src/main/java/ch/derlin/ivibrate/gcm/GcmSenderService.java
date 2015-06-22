@@ -1,21 +1,26 @@
 package ch.derlin.ivibrate.gcm;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
+import ch.derlin.ivibrate.sql.SqlDataSource;
+import ch.derlin.ivibrate.sql.entities.Message;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -30,6 +35,7 @@ public class GcmSenderService extends Service{
     private Gson gson = new GsonBuilder().create();
     private static Random random = new Random();
     private Set<Integer> msgIdSet = new HashSet<>();
+    private LocalBroadcastManager mBroadcastManager;
 
     // ----------------------------------------------------
     public class GcmSenderBinder extends Binder{
@@ -61,6 +67,7 @@ public class GcmSenderService extends Service{
                 .getString( getString( R.string.pref_regid ), null );
         if( regid == null ) loadRegIdAsync();
         INSTANCE = this;
+        mBroadcastManager = LocalBroadcastManager.getInstance( this );
     }
 
 
@@ -117,11 +124,17 @@ public class GcmSenderService extends Service{
 
 
     public void sendMessage( String to, long[] pattern ){
+        // create data bundle
         Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_MESSAGE );
+        data.putString( ACTION_KEY, GcmConstants.ACTION_MESSAGE_RECEIVED );
         data.putString( TO_KEY, to );
         data.putString( MESSAGE_KEY, gson.toJson( pattern ) );
+        // send message
         sendData( data );
+        // save it to local db
+        saveMessage( Message.createSentInstance( to, pattern ) );
+        // notify the GcmCallbacks (local broadcast)
+        notify( data );
     }
 
 
@@ -138,14 +151,33 @@ public class GcmSenderService extends Service{
     }
 
 
-    public void sendData( Bundle data ){
+    public void sendData( Bundle data){
         data.putString( REGID_KEY, regid ); // always put regid
         try{
             String id = getMessageId();
             gcm.send( PROJECT_ID + "@gcm.googleapis.com", id, data );
-
         }catch( IOException e ){
             Log.e( "GCM", "IOException while sending registration id", e );
+        }
+    }
+
+    // ----------------------------------------------------
+
+    private void notify(Bundle data){
+        Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
+        i.putExtra( EXTRA_EVT_TYPE, ACTION_MESSAGE_SENT );
+        i.putExtras( data );
+        mBroadcastManager.sendBroadcast( i );
+    }
+
+
+    private void saveMessage(Message message){
+        // add message to db
+        Context context = App.getAppContext();
+        try( SqlDataSource src = new SqlDataSource( context, true ) ){
+            src.addMessage( message );
+        }catch( SQLException e ){
+            Log.d( context.getPackageName(), "error adding message " + e );
         }
     }
 

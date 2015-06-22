@@ -2,24 +2,20 @@ package ch.derlin.ivibrate.main.frag.listconv;
 
 
 import android.app.Activity;
-import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.sql.SqlDataSource;
+import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.entities.Friend;
+import ch.derlin.ivibrate.sql.entities.Message;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Created by lucy on 19/06/15.
@@ -28,12 +24,15 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
 
     ListView mList;
     ListConvAdapter mAdapter;
+    Map<String, Friend> mFriends;
     ConversationFragmentCallbacks mListener;
 
-
-    public void notifyNewFriend( Friend f ){
-        mAdapter.add( f );
-    }
+    private GcmCallbacks mCallbacks = new GcmCallbacks(){
+        @Override
+        public void onMessageReceived( String from, Message message ){
+            mAdapter.notifyDataSetChanged();
+        }
+    };
 
     // ----------------------------------------------------
 
@@ -41,9 +40,12 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
         void onAddConversation();
 
         void onConversationSelected( Friend friend );
+
+        Map<String, Friend> getFriends();
     }
 
-     // ----------------------------------------------------
+    // ----------------------------------------------------
+
 
     public static ListConversationsFragment newInstance(){
         return new ListConversationsFragment();
@@ -53,6 +55,7 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
     @Override
     public void onAttach( Activity activity ){
         super.onAttach( activity );
+        mCallbacks.registerSelf( getActivity() );
         if( activity instanceof ConversationFragmentCallbacks ){
             mListener = ( ConversationFragmentCallbacks ) activity;
         }
@@ -64,39 +67,23 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
     public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ){
         View view = inflater.inflate( R.layout.fragment_main_listconv, container, false );
 
+        mFriends = mListener.getFriends();
         mList = ( ListView ) view.findViewById( R.id.listView );
+        mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( mFriends.values() ) );
+        mList.setAdapter( mAdapter );
         mList.setOnItemClickListener( this );
         setHasOptionsMenu( true );
-        (( ActionBarActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled( false );
-        getActivity().setTitle("Conversations");
-        loadData(getActivity());
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( false );
+        getActivity().setTitle( "Conversations" );
 
         return view;
     }
 
 
-    private void loadData(final Context context){
-        new AsyncTask<Void, Void, Map<String, Friend>>(){
-
-            @Override
-            protected Map<String, Friend> doInBackground( Void... params ){
-
-                try( SqlDataSource src = new SqlDataSource( context, true ) ){
-                    return src.getFriends();
-                }catch( SQLException e ){
-                    Log.d( getActivity().getPackageName(), "Error retrieving data: " + e );
-                }
-
-                return new TreeMap<>();
-            }
-
-
-            @Override
-            protected void onPostExecute( Map<String, Friend> friends ){
-                mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( friends.values() ) );
-                mList.setAdapter( mAdapter );
-            }
-        }.execute();
+    @Override
+    public void onDetach(){
+        super.onDetach();
+        mCallbacks.unregisterSelf( getActivity() );
     }
 
 
@@ -122,7 +109,6 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
 
     @Override
     public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
-        if( mListener != null)
-            mListener.onConversationSelected( ( Friend ) mAdapter.getItem( position ) );
+        if( mListener != null ) mListener.onConversationSelected( ( Friend ) mAdapter.getItem( position ) );
     }
 }

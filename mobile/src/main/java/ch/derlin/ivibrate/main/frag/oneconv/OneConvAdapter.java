@@ -39,6 +39,17 @@ public class OneConvAdapter extends BaseAdapter{
         return position;
     }
 
+    public void add(Message message){
+        mList.add( message );
+        notifyDataSetChanged();
+    }
+
+    public void remove(Message message){
+        if(mList.contains( message )){
+            mList.remove( message );
+            notifyDataSetChanged();
+        }
+    }
 
     @Override
     public View getView( int position, View convertView, ViewGroup parent ){
@@ -57,7 +68,7 @@ public class OneConvAdapter extends BaseAdapter{
         }
 
         Message m = mList.get( position );
-        viewHolder.title.setText( m.getDir().equals( Message.SENT_MSG ) ? "-> " : "<- " + m.getDate() );
+        viewHolder.title.setText( (m.getDir().equals( Message.SENT_MSG ) ? "-> " : "<- ") + m.getDate() );
         viewHolder.text.setText( m.getPattern() );
 
         return convertView;

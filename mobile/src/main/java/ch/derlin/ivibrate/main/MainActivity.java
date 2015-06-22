@@ -2,8 +2,10 @@ package ch.derlin.ivibrate.main;
 
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -16,10 +18,8 @@ import android.widget.Toast;
 import ch.derlin.ivibrate.PatternActivity;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
-import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
-import ch.derlin.ivibrate.main.drawer.NavigationDrawerCallbacks;
 import ch.derlin.ivibrate.main.frag.listconv.ListConversationsFragment;
 import ch.derlin.ivibrate.main.frag.oneconv.OneConvFragment;
 import ch.derlin.ivibrate.sql.SqlDataSource;
@@ -31,22 +31,20 @@ import ch.derlin.ivibrate.wear.WearableCallbacks;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static ch.derlin.ivibrate.utils.LocalContactsManager.getAvailableContacts;
 
 
-public class MainActivity extends ActionBarActivity implements NavigationDrawerCallbacks, OneConvFragment
-        .OneConvFragmentCallbacks, ListConversationsFragment.ConversationFragmentCallbacks{
+public class MainActivity extends ActionBarActivity implements OneConvFragment.OneConvFragmentCallbacks,
+        ListConversationsFragment.ConversationFragmentCallbacks{
 
     private static final int PATTERN_REQUEST_CODE = 7834;
-    /**
-     * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
-     */
-//    private NavigationDrawerFragment mNavigationDrawerFragment;
-    private Toolbar mToolbar;
     private ListConversationsFragment mListConvFragment;
+    private OneConvFragment mOneConvFragment;
     private List<LocalContactDetails> mAvailableContacts;
-
+    private Map<String, Friend> mFriends;
     private boolean mNewConvPending = false;
 
     /* *****************************************************************
@@ -58,19 +56,11 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
     protected void onCreate( Bundle savedInstanceState ){
         super.onCreate( savedInstanceState );
 
-
         setContentView( R.layout.activity_main );
-        mToolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
+        Toolbar mToolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
         setSupportActionBar( mToolbar );
 
-
-        // Set up the drawer.
-//        mNavigationDrawerFragment = ( NavigationDrawerFragment ) getFragmentManager().findFragmentById( R.id
-//                .fragment_drawer );
-//        mNavigationDrawerFragment.setup( R.id.fragment_drawer, ( DrawerLayout ) findViewById( R.id.drawer ), mToolbar );
-
-        mListConvFragment = ListConversationsFragment.newInstance();
-        setFragment( mListConvFragment );
+        loadFriends();
 
     }
 
@@ -81,44 +71,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
                 .commit();
     }
 
-
-    @Override
-    public void onNavigationDrawerItemSelected( int position ){
-        // update the main content by replacing fragments
-        Toast.makeText( this, "Menu item selected -> " + position, Toast.LENGTH_SHORT ).show();
-        switch( position ){
-            case 0:
-                if( mListConvFragment == null ){
-                    mListConvFragment = ListConversationsFragment.newInstance();
-                    setFragment( mListConvFragment );
-                    break;
-                }
-        }
-    }
-
- /*
-    @Override
-    public void onBackPressed(){
-        if( mNavigationDrawerFragment.isDrawerOpen() ){
-            mNavigationDrawerFragment.closeDrawer();
-        }else{
-            super.onBackPressed();
-        }
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu ){
-        if( mNavigationDrawerFragment != null && !mNavigationDrawerFragment.isDrawerOpen() ){
-            // Only show items in the action bar relevant to this screen
-            // if the drawer is not showing. Otherwise, let the drawer
-            // decide what to show in the action bar.
-            getMenuInflater().inflate( R.menu.main, menu );
-            return true;
-        }
-        return super.onCreateOptionsMenu( menu );
-    }
- */
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item ){
@@ -187,21 +139,6 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
             }
         }
 
-
-        @Override
-        public void onMessageReceived( String from, String message ){
-            long[] pattern = AppUtils.getPatternFromString( message );
-            if( pattern != null ){
-                SendToWearableService.getInstance().sendPattern( pattern );
-                Toast.makeText( MainActivity.this, "New Message: " + from + " - " + message, Toast.LENGTH_LONG ).show();
-            }else{
-                Toast.makeText( MainActivity.this, " Message: " + from + " - " + message + " INVALID JSON", Toast
-                        .LENGTH_LONG ).show();
-
-            }
-        }
-
-
         @Override
         public void onNewRegistration( String account ){
             // TODO
@@ -247,6 +184,12 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
 
 
     @Override
+    public Map<String, Friend> getFriends(){
+        return mFriends;
+    }
+
+
+    @Override
     public void onAddConversation(){
         if( mAvailableContacts == null ){
             mNewConvPending = true;
@@ -259,8 +202,8 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
 
     @Override
     public void onConversationSelected( Friend friend ){
-        Fragment f = OneConvFragment.newInstance( friend );
-        setFragment( f );
+        mOneConvFragment = OneConvFragment.newInstance( friend );
+        setFragment( mOneConvFragment );
     }
 
 
@@ -277,6 +220,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
 
     @Override
     public void onBackToFriendsList(){
+        mOneConvFragment = null;
         setFragment( mListConvFragment );
     }
 
@@ -289,9 +233,40 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
     // ----------------------------------------------------
 
 
+    private void loadFriends(){
+        final Context context = MainActivity.this;
+        new AsyncTask<Void, Void, Map<String, Friend>>(){
+
+            @Override
+            protected Map<String, Friend> doInBackground( Void... params ){
+
+                try( SqlDataSource src = new SqlDataSource( context, true ) ){
+                    return src.getFriends();
+                }catch( SQLException e ){
+                    Log.d( context.getPackageName(), "Error retrieving data: " + e );
+                }
+
+                return new TreeMap<>();
+            }
+
+
+            @Override
+            protected void onPostExecute( Map<String, Friend> friends ){
+                mFriends = friends;
+                // first load, launch the conversation fragment
+                if( mListConvFragment == null ){
+                    mListConvFragment = ListConversationsFragment.newInstance();
+                    setFragment( mListConvFragment );
+                }
+            }
+        }.execute();
+    }
+    // ----------------------------------------------------
+
+
     public void addConversation(){
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder( this );
-        builderSingle.setTitle( "Select a friend:" );
+        AlertDialog.Builder builder = new AlertDialog.Builder( this );
+        builder.setTitle( "Select a friend:" );
         final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>( this, android.R.layout
                 .select_dialog_singlechoice );
 
@@ -299,7 +274,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
             arrayAdapter.add( details.getName() );
         }//end for
 
-        builderSingle.setNegativeButton( "cancel", new DialogInterface.OnClickListener(){
+        builder.setNegativeButton( "cancel", new DialogInterface.OnClickListener(){
 
             @Override
             public void onClick( DialogInterface dialog, int which ){
@@ -307,35 +282,53 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerC
             }
         } );
 
-        builderSingle.setAdapter( arrayAdapter, new DialogInterface.OnClickListener(){
+        builder.setAdapter( arrayAdapter, new DialogInterface.OnClickListener(){
 
-            @Override
-            public void onClick( DialogInterface dialog, int which ){
-                String strName = arrayAdapter.getItem( which );
-                LocalContactDetails details = mAvailableContacts.get( which );
-                if( !details.getName().equals( strName ) ){
-                    for( LocalContactDetails lcd : mAvailableContacts ){
-                        if( lcd.getName().equals( strName ) ){
-                            details = lcd;
-                            break;
+                    @Override
+                    public void onClick( DialogInterface dialog, int which ){
+                        String strName = arrayAdapter.getItem( which );
+
+                        LocalContactDetails details = mAvailableContacts.get( which );
+                        // TODO: simplify
+//                        if( !details.getName().equals( strName ) ){
+//                            for( LocalContactDetails lcd : mAvailableContacts ){
+//                                if( lcd.getName().equals( strName ) ){
+//                                    details = lcd;
+//                                    break;
+//                                }
+//                            }//end for
+//                        }
+
+                        dialog.dismiss();
+
+                        if( details.getName().equals( strName ) ){
+                            String phone = details.getPhone();
+
+                            if( mFriends.containsKey( phone ) ){
+                                // friend already exists,
+                                onConversationSelected( mFriends.get( phone ) );
+                                return;
+
+                            }
+
+                            try( SqlDataSource src = new SqlDataSource( MainActivity.this, true ) ){
+                                // add the new friend and launch the conversation view
+                                Friend f = new Friend();
+                                f.setPhone( details.getPhone() );
+                                f.setDetails( details );
+                                src.addFriend( f );
+                                mFriends.put( phone, f );
+                                //                                mListConvFragment.notifyNewFriend( f );
+                                onConversationSelected( f );
+                            }catch( SQLException e ){
+                                Log.d( getPackageName(), "Error adding friend " + e );
+                            }
                         }
-                    }//end for
-                }
-
-                dialog.dismiss();
-                if( details != null ){
-                    try( SqlDataSource src = new SqlDataSource( MainActivity.this, true ) ){
-                        Friend f = new Friend();
-                        f.setPhone( details.getPhone() );
-                        f.setDetails( details );
-                        src.addFriend( f );
-                        mListConvFragment.notifyNewFriend( f );
-                    }catch( SQLException e ){
-                        e.printStackTrace();
                     }
                 }
-            }
-        } );
-        builderSingle.show();
+
+
+        );
+        builder.show();
     }
 }

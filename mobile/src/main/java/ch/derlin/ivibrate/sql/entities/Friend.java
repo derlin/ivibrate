@@ -15,7 +15,6 @@ import java.sql.SQLException;
 public class Friend implements Parcelable{
 
     private String phone;
-    private Long messagesCount;
     private boolean isLocalContactLoaded = false;
     private LocalContactDetails details;
 
@@ -28,7 +27,6 @@ public class Friend implements Parcelable{
 
     public Friend( Parcel in ){
         phone = in.readString();
-        messagesCount = in.readLong();
         isLocalContactLoaded = in.readInt() == 1;
         if( isLocalContactLoaded ){
             details = in.readParcelable( LocalContactDetails.class.getClassLoader() );
@@ -48,21 +46,20 @@ public class Friend implements Parcelable{
 
 
     public long getMessagesCount(){
-        if( messagesCount == null ){
-            try( SqlDataSource src = new SqlDataSource( App.getAppContext(), true ) ){
-                messagesCount = src.getMessagesCount( phone );
-            }catch( SQLException e ){
-                Log.d( "SQL", "error retrieving message count for " + this.phone + ": " + e );
-            }
-        }
 
-        return messagesCount;
+        try( SqlDataSource src = new SqlDataSource( App.getAppContext(), true ) ){
+            return src.getMessagesCount( phone );
+        }catch( SQLException e ){
+            Log.d( "SQL", "error retrieving message count for " + this.phone + ": " + e );
+        }
+        return 0;
+
     }
 
 
     public LocalContactDetails getDetails(){
         if( !isLocalContactLoaded ){
-            details = LocalContactsManager.getContactDetails(phone);
+            details = LocalContactsManager.getContactDetails( phone );
             isLocalContactLoaded = true;
         }
         return details;
@@ -86,10 +83,10 @@ public class Friend implements Parcelable{
     @Override
     public void writeToParcel( Parcel dest, int flags ){
         dest.writeString( phone );
-        dest.writeLong( messagesCount );
         dest.writeInt( isLocalContactLoaded ? 1 : 0 );
         if( isLocalContactLoaded ) dest.writeParcelable( details, flags );
     }
+
 
     public static final Parcelable.Creator<Friend> CREATOR = new Parcelable.Creator<Friend>(){
         @Override
@@ -100,7 +97,7 @@ public class Friend implements Parcelable{
 
         @Override
         public Friend[] newArray( int size ){
-            return new Friend[size];
+            return new Friend[ size ];
         }
     };
 

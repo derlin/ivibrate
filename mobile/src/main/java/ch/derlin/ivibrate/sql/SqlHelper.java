@@ -22,8 +22,8 @@ public class SqlHelper extends SQLiteOpenHelper{
     //        F_COL_PHONE, F_COL_CONTACT_ID
     //    };
 
-    public static final String P_TABLE_NAME = "patterns";
     public static final String P_COL_ID = "id";
+    public static final String P_TABLE_NAME = "patterns";
     public static final String P_COL_PHONE = "friend_phone";
     public static final String P_COL_PATTERN = "pattern";
     public static final String P_COL_DATE = "date";

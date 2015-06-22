@@ -9,13 +9,13 @@ import android.util.Log;
 import android.view.*;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
+import ch.derlin.ivibrate.gcm.GcmCallbacks;
+import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.Message;
-import ch.derlin.ivibrate.sql.SqlDataSource;
 import com.google.gson.reflect.TypeToken;
 
 import java.sql.SQLException;
@@ -39,8 +39,24 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     private Friend mFriend;
     private OneConvFragmentCallbacks mListener;
     private AbsListView mListView;
-    private ListAdapter mAdapter;
+    private OneConvAdapter mAdapter;
 
+    private GcmCallbacks mCallbacks = new GcmCallbacks(){
+        @Override
+        public void onMessageReceived( String from, Message message ){
+            if( mFriend.getPhone().equals( from ) ){
+                mAdapter.add( message );
+            }
+        }
+
+
+        @Override
+        public void onMessageSent( String to, Message message ){
+            if( mFriend.getPhone().equals( to ) ){
+                mAdapter.add( message );
+            }
+        }
+    };
     // ----------------------------------------------------
 
     public interface OneConvFragmentCallbacks{
@@ -52,6 +68,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     }
 
     // ----------------------------------------------------
+
 
     public static OneConvFragment newInstance( Friend friend ){
         OneConvFragment fragment = new OneConvFragment();
@@ -76,10 +93,10 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
         if( getArguments() != null ){
             mFriend = getArguments().getParcelable( ARG_FRIEND );
-            getActivity().setTitle(mFriend.getDetails().getName());
+            getActivity().setTitle( mFriend.getDetails().getName() );
         }
 
-        (( ActionBarActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
         setHasOptionsMenu( true );
         loadData();
     }
@@ -91,7 +108,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
         // Set the adapter
         mListView = ( AbsListView ) view.findViewById( android.R.id.list );
-        ( ( AdapterView<ListAdapter> ) mListView ).setAdapter( mAdapter );
+        mListView.setAdapter( mAdapter );
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener( this );
@@ -103,6 +120,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     @Override
     public void onAttach( Activity activity ){
         super.onAttach( activity );
+        mCallbacks.registerSelf( getActivity() );
         try{
             mListener = ( OneConvFragmentCallbacks ) activity;
         }catch( ClassCastException e ){
@@ -114,9 +132,9 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     @Override
     public void onDetach(){
         super.onDetach();
+        mCallbacks.unregisterSelf( getActivity() );
         mListener = null;
     }
-
 
 
     // ----------------------------------------------------
@@ -143,9 +161,11 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
             protected void onPostExecute( List<Message> message ){
                 mAdapter = new OneConvAdapter( getActivity(), new ArrayList<>( message ) );
                 mListView.setAdapter( mAdapter );
+                registerForContextMenu( mListView );
             }
         }.execute();
     }
+
     // ----------------------------------------------------
 
 
@@ -173,6 +193,41 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
         }
     }
 
+
+    @Override
+    public void onCreateContextMenu( ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo ){
+        if( v.getId() == android.R.id.list ){
+            menu.setHeaderTitle( "Options" );
+            String[] menuItems = getResources().getStringArray( R.array.oneconv_context_menu );
+            for( int i = 0; i < menuItems.length; i++ ){
+                menu.add( Menu.NONE, i, i, menuItems[ i ] );
+            }
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        Message m = ( Message ) mAdapter.getItem( info.position );
+        switch( item.getItemId() ){
+            case 0: // replay
+                mListener.onReplayPattern( m.getPatternObject() );
+                break;
+            case 1: // delete
+                try(SqlDataSource src = new SqlDataSource( getActivity(), true )){
+                    if(src.deleteMessage(m)){
+                        mAdapter.remove(m);
+                    }
+
+                }catch( SQLException e ){
+                    Log.d( getActivity().getPackageName(), "Could not delete message " + e );
+                }
+                break;
+
+        }
+
+        return true;
+    }
 
     // ----------------------------------------------------
 
