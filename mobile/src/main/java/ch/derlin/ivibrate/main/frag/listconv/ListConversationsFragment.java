@@ -36,6 +36,11 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
     private GcmCallbacks mCallbacks = new GcmCallbacks(){
         @Override
         public void onMessageReceived( String from, Message message ){
+            if( !mFriends.containsKey( from ) ){
+                Friend f = new Friend( from );
+                mFriends.put( from, f );
+                mAdapter.add( f );
+            }
             mAdapter.notifyDataSetChanged();
         }
     };
@@ -132,8 +137,8 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
         final Friend friend = ( Friend ) mAdapter.getItem( position );
         final String name = friend.getDetails() != null ? friend.getDetails().getName() : friend.getPhone();
         new AlertDialog.Builder( getActivity() ).setIcon( android.R.drawable.ic_dialog_alert ).setTitle( "Delete " +
-                name ).setMessage( "Are you sure you want to remove this friend? The whole conversation will be lost" +
-                "." ).setPositiveButton( "Yes", new DialogInterface.OnClickListener(){
+                name ).setMessage( "Are you sure you want to remove this friend? The whole conversation will be lost"
+                + "." ).setPositiveButton( "Yes", new DialogInterface.OnClickListener(){
             @Override
             public void onClick( DialogInterface dialog, int which ){
                 try( SqlDataSource src = new SqlDataSource( getActivity(), true ) ){

@@ -25,6 +25,11 @@ public class Friend implements Parcelable{
     public Friend(){}
 
 
+    public Friend( String phone ){
+        this.phone = phone;
+    }
+
+
     public Friend( Parcel in ){
         phone = in.readString();
         isLocalContactLoaded = in.readInt() == 1;

@@ -82,7 +82,8 @@ public class ListConvAdapter extends BaseAdapter{
             viewHolder.image.setImageResource( R.drawable.qm_face);
         }
 
-        viewHolder.text.setText( f.getMessagesCount() + " messages.");
+        long count = f.getMessagesCount();
+        viewHolder.text.setText( String.format( "%d message%s.", count, count > 1 ? "s" : "" ));
 
         return convertView;
     }

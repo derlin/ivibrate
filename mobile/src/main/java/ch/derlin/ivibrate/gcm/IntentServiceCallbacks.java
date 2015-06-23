@@ -10,6 +10,7 @@ import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.main.MainActivity;
 import ch.derlin.ivibrate.sql.SqlDataSource;
+import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
 import ch.derlin.ivibrate.utils.LocalContactsManager;
@@ -34,6 +35,7 @@ public class IntentServiceCallbacks extends GcmCallbacks{
         // add message to db
         // add message to db
         try( SqlDataSource src = new SqlDataSource( context, true ) ){
+            src.addFriend( new Friend( from ) );
             src.addMessage( message );
         }catch( SQLException e ){
             Log.d( context.getPackageName(), "error adding message " + e );
@@ -48,11 +50,11 @@ public class IntentServiceCallbacks extends GcmCallbacks{
 
 
     @Override
-    public void onAckReceived(String from, Long id){
-        try(SqlDataSource src = new SqlDataSource( App.getAppContext(), true )){
-           if(src.setMessageAcked( id )){
-               Log.i( "ACK", "ACK => id " + id + " from " + from );
-           }
+    public void onAckReceived( String from, Long id ){
+        try( SqlDataSource src = new SqlDataSource( App.getAppContext(), true ) ){
+            if( src.setMessageAcked( id ) ){
+                Log.i( "ACK", "ACK => id " + id + " from " + from );
+            }
         }catch( Exception e ){
             Log.d( "ACK", "could not retrieve acked message from db" );
         }
