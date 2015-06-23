@@ -57,6 +57,14 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
                 mAdapter.add( message );
             }
         }
+
+
+        @Override
+        public void onAckReceived( String from, Long messageId ){
+            if(mFriend.getPhone().equals( from )){
+                mAdapter.setAcked(messageId);
+            }
+        }
     };
     // ----------------------------------------------------
 

@@ -110,7 +110,7 @@ public class GcmSenderService extends Service{
         if( phone == null ) return;
 
         Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_REGISTER );
+        data.putString( ACTION_KEY, ACTION_REGISTER );
         data.putString( MESSAGE_KEY, phone );
         sendData( data );
     }
@@ -118,21 +118,24 @@ public class GcmSenderService extends Service{
 
     public void askForAccounts(){
         Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_GET_ACCOUNTS );
+        data.putString( ACTION_KEY, ACTION_GET_ACCOUNTS );
         sendData( data );
     }
 
 
     public void sendMessage( String to, long[] pattern ){
+        // save it to local db
+        Message m = Message.createSentInstance( to, pattern );
+        saveMessage( m );
+
         // create data bundle
         Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_MESSAGE_RECEIVED );
+        data.putString( ACTION_KEY, ACTION_MESSAGE_RECEIVED );
         data.putString( TO_KEY, to );
         data.putString( MESSAGE_KEY, gson.toJson( pattern ) );
+        data.putString( MESSAGE_ID_KEY, "" + m.getId() );
         // send message
         sendData( data );
-        // save it to local db
-        saveMessage( Message.createSentInstance( to, pattern ) );
         // notify the GcmCallbacks (local broadcast)
         notify( data );
     }

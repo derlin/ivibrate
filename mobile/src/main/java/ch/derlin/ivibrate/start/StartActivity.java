@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
@@ -97,7 +98,7 @@ public class StartActivity extends FragmentActivity{
 
         phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ), null );
         setContentView( R.layout.activity_start );
-//        setInterface();
+        getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new DummyFragment() ).commit();
 
     }
 
@@ -204,6 +205,18 @@ public class StartActivity extends FragmentActivity{
             }else{
                 Toast.makeText( getActivity(), "Please, enter a valid phone number.", Toast.LENGTH_SHORT ).show();
             }
+        }
+    }
+
+    /* *****************************************************************
+     * dummy fragment
+     * ****************************************************************/
+    class DummyFragment extends Fragment {
+
+        @Nullable
+        @Override
+        public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ){
+            return inflater.inflate( R.layout.fragment_start_progressbar, container, false );
         }
     }
 }

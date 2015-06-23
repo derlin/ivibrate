@@ -14,6 +14,7 @@ public class GcmConstants{
     public static final String REGID_KEY = "regid";
     public static final String ACCOUNTS_KEY = "accounts";
     public static final String MESSAGE_KEY = "message";
+    public static final String MESSAGE_ID_KEY = "my_message_id";
 
     public static final String ACTION_KEY = "action";
 
@@ -23,10 +24,10 @@ public class GcmConstants{
     public static final String ACTION_MESSAGE_RECEIVED = PACKAGE + ".MESSAGE";
     public static final String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     public static final String ACTION_GET_ACCOUNTS = PACKAGE + ".GET_ACCOUNTS";
+    public static final String ACTION_ACK = PACKAGE + "_ack";
 
     public static final String MESG_TYPE_KEY = "message_type";
-    public static final String MESG_TYPE_ACK = "ack";
-    public static final String MESG_TYPE_NACK = "nack";
+//    public static final String MESG_TYPE_NACK = "_nack";
 
     public static final String EXTRA_EVT_TYPE = "event_type";
 }//end class

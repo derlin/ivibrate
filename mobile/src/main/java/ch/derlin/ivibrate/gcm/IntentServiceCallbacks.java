@@ -47,6 +47,17 @@ public class IntentServiceCallbacks extends GcmCallbacks{
     }
 
 
+    @Override
+    public void onAckReceived(String from, Long id){
+        try(SqlDataSource src = new SqlDataSource( App.getAppContext(), true )){
+           if(src.setMessageAcked( id )){
+               Log.i( "ACK", "ACK => id " + id + " from " + from );
+           }
+        }catch( Exception e ){
+            Log.d( "ACK", "could not retrieve acked message from db" );
+        }
+    }
+
 
     @Override
     public void onUnregistration( String account ){

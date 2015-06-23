@@ -19,10 +19,12 @@ public class OneConvAdapter extends BaseAdapter{
     List<Message> mList;
     Activity mActivity;
 
-    public OneConvAdapter(Activity activity, List<Message> list){
+
+    public OneConvAdapter( Activity activity, List<Message> list ){
         mList = list;
         mActivity = activity;
     }
+
 
     @Override
     public int getCount(){
@@ -41,17 +43,20 @@ public class OneConvAdapter extends BaseAdapter{
         return position;
     }
 
-    public void add(Message message){
+
+    public void add( Message message ){
         mList.add( message );
         notifyDataSetChanged();
     }
 
-    public void remove(Message message){
-        if(mList.contains( message )){
+
+    public void remove( Message message ){
+        if( mList.contains( message ) ){
             mList.remove( message );
             notifyDataSetChanged();
         }
     }
+
 
     @Override
     public View getView( int position, View convertView, ViewGroup parent ){
@@ -64,6 +69,7 @@ public class OneConvAdapter extends BaseAdapter{
             viewHolder.title = ( TextView ) convertView.findViewById( R.id.title );
             viewHolder.text = ( TextView ) convertView.findViewById( R.id.text );
             viewHolder.image = ( ImageView ) convertView.findViewById( R.id.image );
+            viewHolder.ackImage = ( ImageView ) convertView.findViewById( R.id.icon_ack );
             convertView.setTag( viewHolder );
 
         }else{
@@ -71,18 +77,32 @@ public class OneConvAdapter extends BaseAdapter{
         }
 
         Message m = mList.get( position );
-        viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent_pad : R.drawable
-                .arrow_received_pad );
+        viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent_pad : R
+                .drawable.arrow_received_pad );
         viewHolder.title.setText( m.getDate() );
         viewHolder.text.setText( m.getPattern() );
+        viewHolder.ackImage.setImageResource( m.getIsAcked() ? R.drawable.check_checked : R.drawable.check_unchecked );
+        viewHolder.ackImage.setVisibility( m.getDir().equals( Message.SENT_MSG ) ? View.VISIBLE : View.INVISIBLE );
 
         return convertView;
+    }
+
+
+    public void setAcked( Long messageId ){
+        if(messageId == null) return;
+
+        for( Message message : mList ){
+            if(messageId.equals(  message.getId() ) ){
+                message.setIsAcked( true );
+                notifyDataSetChanged();
+            }
+        }//end for
     }
 
     // ----------------------------------------------------
 
     protected static class ViewHolder{
         TextView title, text;
-        ImageView image;
+        ImageView image, ackImage;
     }
 }

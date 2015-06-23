@@ -17,10 +17,11 @@ public class Message{
     public static final String RECEIVED_MSG = "received";
 
     Long id;
-    String phone_contact;
+    String phoneContact;
     long[] pattern;
     Date date;
     String dir;
+    boolean isAcked;
 
     // ----------------------------------------------------
 
@@ -35,13 +36,13 @@ public class Message{
     }
 
 
-    public String getPhone_contact(){
-        return phone_contact;
+    public String getPhoneContact(){
+        return phoneContact;
     }
 
 
-    public void setPhone_contact( String phone_contact ){
-        this.phone_contact = phone_contact;
+    public void setPhoneContact( String phoneContact ){
+        this.phoneContact = phoneContact;
     }
 
 
@@ -93,6 +94,16 @@ public class Message{
         this.dir = dir;
     }
 
+
+    public boolean getIsAcked(){
+        return isAcked;
+    }
+
+
+    public void setIsAcked( boolean isAcked ){
+        this.isAcked = isAcked;
+    }
+
     // ----------------------------------------------------
 
 
@@ -112,7 +123,7 @@ public class Message{
 
     private static Message create( String friend, long[] pattern ){
         Message m = new Message();
-        m.phone_contact = friend;
+        m.phoneContact = friend;
         m.date = new Date();
         m.pattern = pattern;
 

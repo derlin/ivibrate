@@ -13,7 +13,6 @@ import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 public class GcmIntentService extends IntentService{
 
 
-
     private LocalBroadcastManager mBroadcastManager;
     private GcmCallbacks mCallbacks = new IntentServiceCallbacks();
 
@@ -46,20 +45,23 @@ public class GcmIntentService extends IntentService{
         // The getMessageType() intent parameter must be the intent you received
         // in your BroadcastReceiver.
         String messageType = gcm.getMessageType( intent );
+        Log.d( getPackageName(), "NEW MESSGAGE: " + messageType + " " + extras.toString() );
 
-        if( messageType.equals( MESG_TYPE_ACK ) ){
-            mBroadcastManager.sendBroadcast( getIntent( MESG_TYPE_ACK ) );
+        // the action is the type of message (message, registration, ack...)
+        String action = extras.getString( MESG_TYPE_KEY );
+        if( action == null || !action.matches( PACKAGE + ".*" ) ) return; // TODO
 
-        }else if( messageType.equals( MESG_TYPE_NACK ) ){
-            mBroadcastManager.sendBroadcast( getIntent( MESG_TYPE_NACK ) );
-
-        }else{
-            Log.d( getPackageName(), "NEW MESSGAGE: " + messageType + " " + extras.toString() );
-            // this is a real message
-            String action = extras.getString( MESG_TYPE_KEY );
-            if( action == null ) return; // TODO
-            mBroadcastManager.sendBroadcast( getIntent( action, extras ) );
+        if( ACTION_MESSAGE_RECEIVED.equals( action ) ){
+            // send ack
+            Bundle data = new Bundle();
+            data.putString( ACTION_KEY, ACTION_ACK );
+            data.putString( MESSAGE_ID_KEY, extras.getString( MESSAGE_ID_KEY ) );
+            data.putString( TO_KEY, extras.getString( FROM_KEY ) );
+            GcmSenderService.getInstance().sendData( data );
         }
+
+        mBroadcastManager.sendBroadcast( getIntent( action, extras ) );
+
 
         Log.i( "GCM", "Received : (" + messageType + ")  " + extras.toString() );
 
@@ -71,7 +73,7 @@ public class GcmIntentService extends IntentService{
     protected Intent getIntent( String evtType ){
         Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
         i.putExtra( EXTRA_EVT_TYPE, evtType );
-//        mCallbacks.onReceive( App.getAppContext(), i );
+        //        mCallbacks.onReceive( App.getAppContext(), i );
         return i;
     }
 
@@ -79,7 +81,7 @@ public class GcmIntentService extends IntentService{
     protected Intent getIntent( String evtType, Bundle bundle ){
         Intent i = getIntent( evtType );
         i.putExtras( bundle );
-//        mCallbacks.onReceive( App.getAppContext(), i );
+        //        mCallbacks.onReceive( App.getAppContext(), i );
         return i;
     }
 

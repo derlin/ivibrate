@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.sql.entities.Message;
 
@@ -21,7 +22,7 @@ public class GcmCallbacks extends BroadcastReceiver{
     public void onNackReceived(){}
 
 
-    public void onAckReceived(){}
+    public void onAckReceived( String from, Long messageId ){}
 
 
     public void onAccountsReceived( String[] accounts ){}
@@ -29,7 +30,9 @@ public class GcmCallbacks extends BroadcastReceiver{
 
     public void onMessageReceived( String from, Message message ){}
 
+
     public void onMessageSent( String to, Message message ){ }
+
 
     public void onEchoReceived( String message ){}
 
@@ -59,13 +62,19 @@ public class GcmCallbacks extends BroadcastReceiver{
     public void onReceive( Context context, Intent intent ){
 
         switch( intent.getStringExtra( EXTRA_EVT_TYPE ) ){
-            case MESG_TYPE_ACK:
-                onAckReceived();
+
+            case ACTION_ACK:
+                try{
+                    Long mesgId = Long.parseLong( intent.getStringExtra( MESSAGE_ID_KEY ) );
+                    if( mesgId != null ) onAckReceived( intent.getStringExtra( FROM_KEY ), mesgId );
+                }catch( NumberFormatException e ){
+                    Log.d( "ACTION_ACK", "Could not parse message id " );
+                }
                 break;
 
-            case MESG_TYPE_NACK:
-                onNackReceived();
-                break;
+            //            case MESG_TYPE_NACK:
+            //                onNackReceived();
+            //                break;
 
             case ACTION_GET_ACCOUNTS:
                 String string = intent.getStringExtra( ACCOUNTS_KEY );
@@ -79,17 +88,19 @@ public class GcmCallbacks extends BroadcastReceiver{
             case ACTION_MESSAGE_RECEIVED:
                 String from = intent.getStringExtra( FROM_KEY );
                 long[] pattern = AppUtils.getPatternFromString( intent.getStringExtra( MESSAGE_KEY ) );
-                if(from != null && pattern != null){
-                    Message m = Message.createReceivedInstance(from, pattern);
-                    onMessageReceived(from, m);
+                if( from != null && pattern != null ){
+                    Message m = Message.createReceivedInstance( from, pattern );
+                    onMessageReceived( from, m );
                 }
                 break;
 
             case ACTION_MESSAGE_SENT:
                 String to = intent.getStringExtra( TO_KEY );
                 long[] p = AppUtils.getPatternFromString( intent.getStringExtra( MESSAGE_KEY ) );
-                if(to != null && p != null){
+                Long id = Long.parseLong(intent.getStringExtra( MESSAGE_ID_KEY ));
+                if( to != null && p != null ){
                     Message m = Message.createSentInstance( to, p );
+                    m.setId( id );
                     onMessageSent( to, m );
                 }
                 break;

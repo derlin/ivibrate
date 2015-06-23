@@ -12,7 +12,8 @@
         android:src="@drawable/qm_face" />
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:orientation="vertical">
@@ -41,4 +42,14 @@
             android:singleLine="true"
             android:text="text" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/icon_ack"
+        android:layout_width="15dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="10dp"
+        android:visibility="gone"
+        android:src="@drawable/check_unchecked" />
+
 </LinearLayout>
