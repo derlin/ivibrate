@@ -14,6 +14,7 @@ public class GcmConstants{
     public static final String REGID_KEY = "regid";
     public static final String ACCOUNTS_KEY = "accounts";
     public static final String MESSAGE_KEY = "message";
+    public static final String PATTERN_KEY = "pattern";
     public static final String MESSAGE_ID_KEY = "my_message_id";
 
     public static final String ACTION_KEY = "action";

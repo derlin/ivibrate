@@ -123,21 +123,26 @@ public class GcmSenderService extends Service{
     }
 
 
-    public void sendMessage( String to, long[] pattern ){
+    public void sendMessage( String to, long[] pattern, String text ){
         // save it to local db
-        Message m = Message.createSentInstance( to, pattern );
+        Message m = Message.createSentInstance( to, pattern, text );
         saveMessage( m );
 
         // create data bundle
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, ACTION_MESSAGE_RECEIVED );
         data.putString( TO_KEY, to );
-        data.putString( MESSAGE_KEY, gson.toJson( pattern ) );
+        data.putString( PATTERN_KEY, gson.toJson( pattern ) );
+        data.putString( MESSAGE_KEY, text );
         data.putString( MESSAGE_ID_KEY, "" + m.getId() );
         // send message
         sendData( data );
         // notify the GcmCallbacks (local broadcast)
         notify( data );
+    }
+
+    public void sendMessage(String to, long[] pattern){
+        sendMessage( to, pattern, null );
     }
 
 

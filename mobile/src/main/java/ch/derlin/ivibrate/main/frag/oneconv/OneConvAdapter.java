@@ -80,7 +80,7 @@ public class OneConvAdapter extends BaseAdapter{
         viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent_pad : R
                 .drawable.arrow_received_pad );
         viewHolder.title.setText( m.getDate() );
-        viewHolder.text.setText( m.getPattern() );
+        viewHolder.text.setText( m.getText() == null ? m.getPattern() : m.getText() );
         viewHolder.ackImage.setImageResource( m.getIsAcked() ? R.drawable.check_checked : R.drawable.check_unchecked );
         viewHolder.ackImage.setVisibility( m.getDir().equals( Message.SENT_MSG ) ? View.VISIBLE : View.INVISIBLE );
 

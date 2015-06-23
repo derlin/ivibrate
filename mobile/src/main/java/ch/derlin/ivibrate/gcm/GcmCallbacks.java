@@ -87,19 +87,21 @@ public class GcmCallbacks extends BroadcastReceiver{
 
             case ACTION_MESSAGE_RECEIVED:
                 String from = intent.getStringExtra( FROM_KEY );
-                long[] pattern = AppUtils.getPatternFromString( intent.getStringExtra( MESSAGE_KEY ) );
+                long[] pattern = AppUtils.getPatternFromString( intent.getStringExtra( PATTERN_KEY ) );
+                String text = intent.getStringExtra( MESSAGE_KEY );
                 if( from != null && pattern != null ){
-                    Message m = Message.createReceivedInstance( from, pattern );
+                    Message m = Message.createReceivedInstance( from, pattern, text );
                     onMessageReceived( from, m );
                 }
                 break;
 
             case ACTION_MESSAGE_SENT:
                 String to = intent.getStringExtra( TO_KEY );
-                long[] p = AppUtils.getPatternFromString( intent.getStringExtra( MESSAGE_KEY ) );
+                long[] p = AppUtils.getPatternFromString( intent.getStringExtra( PATTERN_KEY ) );
+                String t = intent.getStringExtra( MESSAGE_KEY );
                 Long id = Long.parseLong(intent.getStringExtra( MESSAGE_ID_KEY ));
                 if( to != null && p != null ){
-                    Message m = Message.createSentInstance( to, p );
+                    Message m = Message.createSentInstance( to, p, t );
                     m.setId( id );
                     onMessageSent( to, m );
                 }

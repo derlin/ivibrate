@@ -30,7 +30,7 @@
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".PatternActivity"
+            android:name=".pattern.PatternActivity"
             android:label="Create pattern" />
 
         <activity

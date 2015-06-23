@@ -15,7 +15,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import ch.derlin.ivibrate.PatternActivity;
+import ch.derlin.ivibrate.pattern.PatternActivity;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
@@ -26,6 +26,7 @@ import ch.derlin.ivibrate.main.frag.oneconv.OneConvFragment;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
+import ch.derlin.ivibrate.sql.entities.Message;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.wear.WearableCallbacks;
 
@@ -173,9 +174,10 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         if( requestCode == PATTERN_REQUEST_CODE ){
             if( resultCode == Activity.RESULT_OK ){
                 long[] pattern = data.getLongArrayExtra( "pattern" );
+                String text = data.getStringExtra( "message" );
                 Friend friend = data.getParcelableExtra( "friend" );
 
-                GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern );
+                GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern, text );
                 Toast.makeText( this, "Message sent to " + friend.getPhone() + ".", Toast.LENGTH_SHORT ).show();
 
             }else{
@@ -217,8 +219,8 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
-    public void onSendMessageTo( Friend friend, long ... pattern ){
-        if(pattern.length == 0){
+    public void onSendMessageTo( Friend friend, Message ... message ){
+        if(message.length == 0){
             // no pattern, show the screen to tap one
             Intent i = new Intent( this, PatternActivity.class );
             Bundle bundle = new Bundle();
@@ -227,8 +229,9 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             startActivityForResult( i, PATTERN_REQUEST_CODE );
 
         }else{
+            Message m = message[0];
             // one pattern, just send it
-            GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern );
+            GcmSenderService.getInstance().sendMessage( friend.getPhone(), m.getPatternObject(), m.getText() );
         }
     }
 

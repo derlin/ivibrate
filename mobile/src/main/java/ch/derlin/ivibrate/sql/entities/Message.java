@@ -19,6 +19,7 @@ public class Message{
     Long id;
     String phoneContact;
     long[] pattern;
+    String text;
     Date date;
     String dir;
     boolean isAcked;
@@ -76,6 +77,16 @@ public class Message{
     }
 
 
+    public String getText(){
+        return text;
+    }
+
+
+    public void setText( String text ){
+        this.text = text;
+    }
+
+
     public void setDate( String date ){
         try{
             this.date = DATE_FORMAT.parse( date );
@@ -107,25 +118,26 @@ public class Message{
     // ----------------------------------------------------
 
 
-    public static Message createSentInstance( String to, long[] pattern ){
-        Message m = create( to, pattern );
+    public static Message createSentInstance( String to, long[] pattern, String text ){
+        Message m = create( to, pattern, text );
         m.dir = SENT_MSG;
         return m;
     }
 
 
-    public static Message createReceivedInstance( String from, long[] pattern ){
-        Message m = create( from, pattern );
+    public static Message createReceivedInstance( String from, long[] pattern, String text ){
+        Message m = create( from, pattern, text );
         m.dir = RECEIVED_MSG;
         return m;
     }
 
 
-    private static Message create( String friend, long[] pattern ){
+    private static Message create( String friend, long[] pattern, String text ){
         Message m = new Message();
         m.phoneContact = friend;
         m.date = new Date();
         m.pattern = pattern;
+        m.text = text;
 
         return m;
     }

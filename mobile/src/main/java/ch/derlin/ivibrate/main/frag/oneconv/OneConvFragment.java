@@ -69,7 +69,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     // ----------------------------------------------------
 
     public interface OneConvFragmentCallbacks{
-        public void onSendMessageTo( Friend friend, long ... pattern );
+        public void onSendMessageTo( Friend friend, Message ... message );
 
         public void onReplayPattern( long[] pattern );
 
@@ -238,7 +238,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
                 }
                 break;
             case 2: // resend
-                mListener.onSendMessageTo( mFriend, m.getPatternObject() );
+                mListener.onSendMessageTo( mFriend, m );
                 break;
         }
 

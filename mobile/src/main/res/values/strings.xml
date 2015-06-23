@@ -11,6 +11,8 @@
     <string name="start_activity_text">Trying to connect to the GCM server.\n\nPlease, ensure that you have an
         internet connection and wait a bit...</string>
 
+    <string name="pattern_activity_message_text">Add an optional message describing your vibration\n(max. 50 chars)
+        :</string>
     <string name="pref_regid">pref_regid</string>
     <string name="pref_phone">pref_phone</string>
     <string name="main_activity_label">main activity</string>

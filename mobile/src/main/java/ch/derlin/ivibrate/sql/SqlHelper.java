@@ -26,6 +26,7 @@ public class SqlHelper extends SQLiteOpenHelper{
     public static final String P_TABLE_NAME = "patterns";
     public static final String P_COL_PHONE = "friend_phone";
     public static final String P_COL_PATTERN = "pattern";
+    public static final String P_COL_TEXT = "text";
     public static final String P_COL_DATE = "date";
     public static final String P_COL_DIR = "direction";
     public static final String P_COL_IS_ACKED = "is_acked";
@@ -41,11 +42,12 @@ public class SqlHelper extends SQLiteOpenHelper{
                     "%s INTEGER PRIMARY KEY AUTOINCREMENT," + // id
                     "%s TEXT NOT NULL, " + //  phone
                     "%s TEXT NOT NULL, " + //  pattern
+                    "%s TEXT         , " + //  text
                     "%s TEXT NOT NULL, " + //  date
                     "%s TEXT NOT NULL, " + //  dir
                     "%s INT DEFAULT 0 " +  // isAcked
                     ");", //
-            P_TABLE_NAME, P_COL_ID, P_COL_PHONE, P_COL_PATTERN, P_COL_DATE, P_COL_DIR, P_COL_IS_ACKED );
+            P_TABLE_NAME, P_COL_ID, P_COL_PHONE, P_COL_PATTERN, P_COL_TEXT, P_COL_DATE, P_COL_DIR, P_COL_IS_ACKED );
 
 
     // ----------------------------------------------------

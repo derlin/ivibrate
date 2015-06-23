@@ -176,6 +176,7 @@ public class SqlDataSource implements AutoCloseable{
         values.put( P_COL_ID, message.getId() );
         values.put( P_COL_PHONE, message.getPhoneContact() );
         values.put( P_COL_PATTERN, message.getPattern() );
+        values.put( P_COL_TEXT, message.getText() );
         values.put( P_COL_DATE, message.getDate() );
         values.put( P_COL_DIR, message.getDir() );
         values.put( P_COL_IS_ACKED, message.getIsAcked() ? 1 : 0 );
@@ -195,6 +196,7 @@ public class SqlDataSource implements AutoCloseable{
         m.setId( cursor.getLong( cursor.getColumnIndex( P_COL_ID ) ) );
         m.setDate( cursor.getString( cursor.getColumnIndex( P_COL_DATE ) ) );
         m.setPattern( cursor.getString( cursor.getColumnIndex( P_COL_PATTERN ) ) );
+        m.setText( cursor.getString( cursor.getColumnIndex( P_COL_TEXT ) ) );
         m.setPhoneContact( cursor.getString( cursor.getColumnIndex( P_COL_PHONE ) ) );
         m.setDir( cursor.getString( cursor.getColumnIndex( P_COL_DIR ) ) );
         m.setIsAcked( cursor.getInt( cursor.getColumnIndex( P_COL_IS_ACKED ) ) > 0 );
