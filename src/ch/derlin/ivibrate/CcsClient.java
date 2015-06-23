@@ -342,7 +342,7 @@ public class CcsClient{
      */
     public static String createJsonAck( String to, String messageId ){
         Map<String, Object> message = new HashMap<String, Object>();
-        message.put( MESG_TYPE_KEY, MESG_TYPE_ACK );
+        message.put( MESG_TYPE_KEY, "ack" );
         message.put( TO_KEY, to );
         message.put( MESSAGE_ID_KEY, messageId );
         return GsonUtils.toJson( message );
@@ -362,7 +362,7 @@ public class CcsClient{
      */
     public static String createJsonNack( String to, String messageId ){
         Map<String, Object> message = new HashMap<String, Object>();
-        message.put( MESG_TYPE_KEY, MESG_TYPE_NACK );
+        message.put( MESG_TYPE_KEY, "nack" );
         message.put( TO_KEY, to );
         message.put( MESSAGE_ID_KEY, messageId );
         return GsonUtils.toJson( message );
@@ -475,11 +475,11 @@ public class CcsClient{
                 String nack = createJsonNack( msg.getFrom(), msg.getMessageId() );
                 send( nack );
             }
-        }else if( MESG_TYPE_ACK.equals( messageType.toString() ) ){
+        }else if( "ack".equals( messageType.toString() ) ){
             // Process Ack
             handleAckReceipt( jsonMap );
 
-        }else if( MESG_TYPE_NACK.equals( messageType.toString() ) ){
+        }else if( "nack".equals( messageType.toString() ) ){
             // Process Nack
             handleNackReceipt( jsonMap );
         }else{

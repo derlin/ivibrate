@@ -24,8 +24,7 @@ public class GcmConstants{
     public static final String ACTION_ECHO = PACKAGE + ".ECHO";
     public static final String ACTION_MESSAGE = PACKAGE + ".MESSAGE";
     public static final String ACTION_GET_ACCOUNTS = PACKAGE + ".GET_ACCOUNTS";
+    public static final String ACTION_ACK = PACKAGE + "_ack";
 
     public static final String MESG_TYPE_KEY = "message_type";
-    public static final String MESG_TYPE_ACK = "ack";
-    public static final String MESG_TYPE_NACK = "nack";
 }//end class
