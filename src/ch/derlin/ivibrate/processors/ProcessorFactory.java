@@ -34,6 +34,8 @@ public class ProcessorFactory{
             return new MessageProcessor();
         }else if( action.equals( ACTION_GET_ACCOUNTS ) ){
             return new GetAccountsProcessor();
+        }else if( action.equals( ACTION_ACK ) ){
+            return new AckProcessor();
         }
         throw new IllegalStateException( "Action " + action + " is unknown" );
     }
