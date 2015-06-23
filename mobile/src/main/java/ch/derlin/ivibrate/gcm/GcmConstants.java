@@ -6,6 +6,7 @@ package ch.derlin.ivibrate.gcm;
 public class GcmConstants{
     public static final String PROJECT_ID = "621732101176";
     public static final String GCM_SERVICE_INTENT_FILTER = "GCM_SERVICE";
+    public static final String NOTIFICATION_KEY = "NOTIFICATION";
 
     public static final String PACKAGE = "ch.derlin.gcm";
     public static final String TO_KEY = "to";

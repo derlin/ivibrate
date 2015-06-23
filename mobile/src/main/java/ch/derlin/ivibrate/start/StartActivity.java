@@ -42,7 +42,7 @@ public class StartActivity extends FragmentActivity{
                         .putString( getString( R.string.pref_phone ), phone ) //
                         .commit();
 
-                Toast.makeText( getApplicationContext(), "Successfully registered with phone " + phone, Toast
+                Toast.makeText( getApplicationContext(), "Successfully registered (" + phone + ")", Toast
                         .LENGTH_LONG ).show();
 
                 launchMainActivity();

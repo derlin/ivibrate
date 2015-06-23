@@ -65,7 +65,7 @@ public class PatternActivity extends ActionBarActivity implements View.OnTouchLi
                 addPattern();
                 break;
             case MotionEvent.ACTION_UP:
-                setPatternBg( android.R.color.holo_purple );
+                setPatternBg( R.color.myTextPrimaryColor );
                 addPattern();
                 break;
             default:

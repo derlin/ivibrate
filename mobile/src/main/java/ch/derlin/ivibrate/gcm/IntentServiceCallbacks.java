@@ -22,7 +22,6 @@ import java.sql.SQLException;
  */
 public class IntentServiceCallbacks extends GcmCallbacks{
 
-
     Context context = App.getAppContext();
     NotificationManager nManager = ( NotificationManager ) context.getSystemService( Context.NOTIFICATION_SERVICE );
 
@@ -43,7 +42,7 @@ public class IntentServiceCallbacks extends GcmCallbacks{
         // notify new message
         LocalContactDetails details = LocalContactsManager.getContactDetails( from );
         String m = String.format( "New message from %s", details == null ? from : details.getName() );
-        notify( Integer.parseInt( from ), "IVibrate", m );
+        notify( from, "IVibrate", m );
 
     }
 
@@ -57,7 +56,7 @@ public class IntentServiceCallbacks extends GcmCallbacks{
     // ----------------------------------------------------
 
 
-    private void notify( int messageId, String notificationTitle, String notificationMessage ){
+    private void notify( String from, String notificationTitle, String notificationMessage ){
         NotificationCompat.Builder builder = new NotificationCompat.Builder( context )  //
                 .setAutoCancel( true ) //
                 .setSmallIcon( R.mipmap.ic_launcher )  //
@@ -65,12 +64,13 @@ public class IntentServiceCallbacks extends GcmCallbacks{
                 .setContentText( notificationMessage ); //
 
         Intent targetIntent = new Intent( context, MainActivity.class );
-        targetIntent.putExtra( "NOTIFICATION", true );
+        targetIntent.putExtra( GcmConstants.NOTIFICATION_KEY, true );
+        targetIntent.putExtra( GcmConstants.FROM_KEY, from );
         PendingIntent contentIntent = PendingIntent.getActivity( context, 0, targetIntent, PendingIntent
                 .FLAG_UPDATE_CURRENT );
         builder.setContentIntent( contentIntent );
 
-        nManager.notify( messageId, builder.build() );
+        nManager.notify( Integer.parseInt( from ), builder.build() );
     }
 
 }

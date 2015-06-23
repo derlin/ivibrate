@@ -19,6 +19,7 @@ import ch.derlin.ivibrate.PatternActivity;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
+import ch.derlin.ivibrate.gcm.GcmConstants;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.frag.listconv.ListConversationsFragment;
 import ch.derlin.ivibrate.main.frag.oneconv.OneConvFragment;
@@ -29,7 +30,6 @@ import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.wear.WearableCallbacks;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -105,7 +105,16 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         super.onStop();
     }
 
-    /* *****************************************************************
+
+    @Override
+    protected void onNewIntent( Intent intent ){
+        Friend f = getFriendExtra( intent );
+        if(f != null){
+            onConversationSelected( f );
+        }
+    }
+
+/* *****************************************************************
      * Wearable callbacks
      * ****************************************************************/
 
@@ -134,7 +143,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             mAvailableContacts = getAvailableContacts( accounts );
             if( mNewConvPending ){
                 // TODO
-                Toast.makeText( MainActivity.this, "Available contacts\n", Toast.LENGTH_SHORT ).show();
                 Log.d( getPackageName(), App.getGson().toJson( mAvailableContacts ) );
                 mNewConvPending = false;
                 addConversation();
@@ -144,14 +152,14 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         @Override
         public void onNewRegistration( String account ){
             // TODO
-            Toast.makeText( MainActivity.this, "New reg: " + account, Toast.LENGTH_LONG ).show();
+            Toast.makeText( MainActivity.this, "New registration: " + account, Toast.LENGTH_SHORT ).show();
         }
 
 
         @Override
         public void onUnregistration( String account ){
             // TODO
-            Toast.makeText( MainActivity.this, "New unreg: " + account, Toast.LENGTH_LONG ).show();
+            Toast.makeText( MainActivity.this, "Unregistration: " + account, Toast.LENGTH_SHORT ).show();
         }
     };
 
@@ -167,12 +175,11 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
                 long[] pattern = data.getLongArrayExtra( "pattern" );
                 Friend friend = data.getParcelableExtra( "friend" );
 
-                Toast.makeText( this, "PATTERN RESULT : " + Arrays.toString( pattern ), Toast.LENGTH_LONG ).show();
                 GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern );
                 Toast.makeText( this, "Message sent to " + friend.getPhone() + ".", Toast.LENGTH_SHORT ).show();
 
             }else{
-                Toast.makeText( this, "PATTERN ACTIVITY CANCELED.", Toast.LENGTH_SHORT ).show();
+                Toast.makeText( this, "Send process canceled.", Toast.LENGTH_SHORT ).show();
             }
 
         }else{
@@ -218,7 +225,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             bundle.putParcelable( "friend", friend );
             i.putExtras( bundle );
             startActivityForResult( i, PATTERN_REQUEST_CODE );
-            Toast.makeText( this, "send message to ", Toast.LENGTH_LONG ).show();
 
         }else{
             // one pattern, just send it
@@ -262,13 +268,36 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             @Override
             protected void onPostExecute( Map<String, Friend> friends ){
                 mFriends = friends;
-                // first load, launch the conversation fragment
-                if( mListConvFragment == null ){
-                    mListConvFragment = ListConversationsFragment.newInstance();
-                    setFragment( mListConvFragment );
-                }
+                onFriendsLoaded();
             }
         }.execute();
+    }
+
+    private void onFriendsLoaded(){
+
+        Friend f = getFriendExtra( getIntent() );
+        if(f != null){
+            onConversationSelected( f );
+        }else{
+            // first load, launch the conversation fragment
+            if( mListConvFragment == null ){
+                mListConvFragment = ListConversationsFragment.newInstance();
+            }
+            setFragment( mListConvFragment );
+        }
+    }
+
+    private Friend getFriendExtra(Intent i){
+        Bundle extras = getIntent().getExtras();
+        // if a notification was pressed, show the contact
+        if(extras != null && extras.containsKey( GcmConstants.NOTIFICATION_KEY )){
+            String from = extras.getString( GcmConstants.FROM_KEY );
+            if(mFriends != null && mFriends.containsKey( from )){
+                return mFriends.get( from );
+            }
+        }
+
+        return null;
     }
     // ----------------------------------------------------
 

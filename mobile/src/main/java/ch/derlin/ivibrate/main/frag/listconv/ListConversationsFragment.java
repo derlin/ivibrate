@@ -138,6 +138,7 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
             public void onClick( DialogInterface dialog, int which ){
                 try( SqlDataSource src = new SqlDataSource( getActivity(), true ) ){
                     if( src.deleteFriend( friend.getPhone() ) ){
+                        mFriends.remove( friend.getPhone() );
                         mAdapter.remove( friend );
                     }
                 }catch( SQLException e ){
