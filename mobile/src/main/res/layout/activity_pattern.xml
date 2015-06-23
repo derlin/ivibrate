@@ -35,7 +35,7 @@
             android:layout_above="@id/buttonPanel"
             android:layout_below="@id/textview"
             android:layout_marginBottom="30dip"
-            android:background="@android:color/holo_purple" />
+            android:background="@color/myTextPrimaryColor" />
 
         <LinearLayout
             android:id="@+id/buttonPanel"

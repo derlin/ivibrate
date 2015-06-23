@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 
@@ -26,6 +28,15 @@ public class ListConvAdapter extends BaseAdapter{
     public void add(Friend f){
         mList.add( f );
         notifyDataSetChanged();
+    }
+
+
+    public void remove( Friend friend ){
+        int position = mList.indexOf( friend );
+        if(position >= 0){
+            mList.remove( position );
+            notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -51,11 +62,12 @@ public class ListConvAdapter extends BaseAdapter{
         ViewHolder viewHolder;
 
         if(convertView == null){
-            convertView = context.getLayoutInflater().inflate( android.R.layout.simple_list_item_2, parent, false );
+            convertView = context.getLayoutInflater().inflate( R.layout.adapter_conv, parent, false );
 
             viewHolder = new ViewHolder();
-            viewHolder.title = ( TextView ) convertView.findViewById( android.R.id.text1 );
-            viewHolder.text = ( TextView ) convertView.findViewById( android.R.id.text2 );
+            viewHolder.image = ( ImageView ) convertView.findViewById( R.id.image );
+            viewHolder.title = ( TextView ) convertView.findViewById( R.id.title );
+            viewHolder.text = ( TextView ) convertView.findViewById( R.id.text );
             convertView.setTag( viewHolder );
         }else{
             viewHolder = ( ViewHolder ) convertView.getTag();
@@ -63,15 +75,24 @@ public class ListConvAdapter extends BaseAdapter{
 
         Friend f = mList.get( position );
         LocalContactDetails details = f.getDetails();
-        viewHolder.title.setText( details == null ? f.getPhone() : f.getDetails().getName());
+        viewHolder.title.setText(details != null ? f.getDetails().getName() : f.getPhone());
+        if(details != null && details.getPhotoUri() != null){
+            viewHolder.image.setImageURI( f.getDetails().getPhotoUri() );
+        }else{
+            viewHolder.image.setImageResource( R.drawable.qm_face);
+        }
+
         viewHolder.text.setText( f.getMessagesCount() + " messages.");
 
         return convertView;
     }
 
+
+
     // ----------------------------------------------------
 
     protected static class ViewHolder{
+        ImageView image;
         TextView title, text;
     }
 }

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.Message;
 
@@ -59,6 +60,12 @@ public class SqlDataSource implements AutoCloseable{
         return db.insert( F_TABLE_NAME, null, friendToContentValues( friend ) ) > 0;
     }
 
+    public boolean deleteFriend( String id ){
+       int del = db.delete( P_TABLE_NAME, P_COL_PHONE + "= ?", new String[]{id} );
+        del += db.delete( F_TABLE_NAME, F_COL_PHONE + "= ?", new String[]{id} );
+        Log.i("SQL IVIBRATE", "Removed friend " + id + " : " + del + "records deleted");
+        return del > 0;
+    }
 
     public Map<String, Friend> getFriends(){
         Map<String, Friend> map = new TreeMap<>();
@@ -163,5 +170,7 @@ public class SqlDataSource implements AutoCloseable{
         m.setDir( cursor.getString( cursor.getColumnIndex( P_COL_DIR ) ) );
         return m;
     }
+
+
 
 }

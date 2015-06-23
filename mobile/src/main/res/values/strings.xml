@@ -18,5 +18,6 @@
     <string-array name="oneconv_context_menu">
         <item>Replay</item>
         <item>Delete</item>
+        <item>Resend</item>
     </string-array>
 </resources>

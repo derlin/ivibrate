@@ -60,7 +60,7 @@ public class IntentServiceCallbacks extends GcmCallbacks{
     private void notify( int messageId, String notificationTitle, String notificationMessage ){
         NotificationCompat.Builder builder = new NotificationCompat.Builder( context )  //
                 .setAutoCancel( true ) //
-                .setSmallIcon( R.drawable.avatar )  //
+                .setSmallIcon( R.mipmap.ic_launcher )  //
                 .setContentTitle( notificationTitle )  //
                 .setContentText( notificationMessage ); //
 

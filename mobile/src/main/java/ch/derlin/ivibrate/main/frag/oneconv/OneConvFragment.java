@@ -15,6 +15,7 @@ import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
+import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
 import com.google.gson.reflect.TypeToken;
 
@@ -60,7 +61,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     // ----------------------------------------------------
 
     public interface OneConvFragmentCallbacks{
-        public void onSendMessageTo( Friend friend );
+        public void onSendMessageTo( Friend friend, long ... pattern );
 
         public void onReplayPattern( long[] pattern );
 
@@ -94,9 +95,13 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
         if( getArguments() != null ){
             mFriend = getArguments().getParcelable( ARG_FRIEND );
             getActivity().setTitle( mFriend.getDetails().getName() );
+            LocalContactDetails details = mFriend.getDetails();
         }
 
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        // remove logo but show the arrow back
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayUseLogoEnabled(false);
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         setHasOptionsMenu( true );
         loadData();
     }
@@ -205,25 +210,28 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
         }
     }
 
+
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+    public boolean onContextItemSelected( MenuItem item ){
+        AdapterView.AdapterContextMenuInfo info = ( AdapterView.AdapterContextMenuInfo ) item.getMenuInfo();
         Message m = ( Message ) mAdapter.getItem( info.position );
         switch( item.getItemId() ){
             case 0: // replay
                 mListener.onReplayPattern( m.getPatternObject() );
                 break;
             case 1: // delete
-                try(SqlDataSource src = new SqlDataSource( getActivity(), true )){
-                    if(src.deleteMessage(m)){
-                        mAdapter.remove(m);
+                try( SqlDataSource src = new SqlDataSource( getActivity(), true ) ){
+                    if( src.deleteMessage( m ) ){
+                        mAdapter.remove( m );
                     }
 
                 }catch( SQLException e ){
                     Log.d( getActivity().getPackageName(), "Could not delete message " + e );
                 }
                 break;
-
+            case 2: // resend
+                mListener.onSendMessageTo( mFriend, m.getPatternObject() );
+                break;
         }
 
         return true;
@@ -234,7 +242,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
     @Override
     public void onCreateOptionsMenu( Menu menu, MenuInflater inflater ){
-        inflater.inflate( R.menu.conversations_menu, menu );
+        inflater.inflate( R.menu.oneconv_menu, menu );
         super.onCreateOptionsMenu( menu, inflater );
     }
 

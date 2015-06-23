@@ -57,9 +57,11 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.activity_main );
-        Toolbar mToolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
-        setSupportActionBar( mToolbar );
-
+        Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
+        setSupportActionBar( toolbar );
+        getSupportActionBar().setDisplayUseLogoEnabled( true );
+        getSupportActionBar().setLogo( R.mipmap.ic_launcher );
+        setTitle( "IVibrate" );
         loadFriends();
 
     }
@@ -208,13 +210,20 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
-    public void onSendMessageTo( Friend friend ){
-        Intent i = new Intent( this, PatternActivity.class );
-        Bundle bundle = new Bundle();
-        bundle.putParcelable( "friend", friend );
-        i.putExtras( bundle );
-        startActivityForResult( i, PATTERN_REQUEST_CODE );
-        Toast.makeText( this, "send message to ", Toast.LENGTH_LONG ).show();
+    public void onSendMessageTo( Friend friend, long ... pattern ){
+        if(pattern.length == 0){
+            // no pattern, show the screen to tap one
+            Intent i = new Intent( this, PatternActivity.class );
+            Bundle bundle = new Bundle();
+            bundle.putParcelable( "friend", friend );
+            i.putExtras( bundle );
+            startActivityForResult( i, PATTERN_REQUEST_CODE );
+            Toast.makeText( this, "send message to ", Toast.LENGTH_LONG ).show();
+
+        }else{
+            // one pattern, just send it
+            GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern );
+        }
     }
 
 

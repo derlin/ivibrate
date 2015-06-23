@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.sql.entities.Message;
 
 import java.util.List;
@@ -56,11 +58,12 @@ public class OneConvAdapter extends BaseAdapter{
         ViewHolder viewHolder;
 
         if( convertView == null ){
-            convertView = mActivity.getLayoutInflater().inflate( android.R.layout.simple_list_item_2, parent, false );
+            convertView = mActivity.getLayoutInflater().inflate( R.layout.adapter_conv, parent, false );
 
             viewHolder = new ViewHolder();
-            viewHolder.title = ( TextView ) convertView.findViewById( android.R.id.text1 );
-            viewHolder.text = ( TextView ) convertView.findViewById( android.R.id.text2 );
+            viewHolder.title = ( TextView ) convertView.findViewById( R.id.title );
+            viewHolder.text = ( TextView ) convertView.findViewById( R.id.text );
+            viewHolder.image = ( ImageView ) convertView.findViewById( R.id.image );
             convertView.setTag( viewHolder );
 
         }else{
@@ -68,7 +71,9 @@ public class OneConvAdapter extends BaseAdapter{
         }
 
         Message m = mList.get( position );
-        viewHolder.title.setText( (m.getDir().equals( Message.SENT_MSG ) ? "-> " : "<- ") + m.getDate() );
+        viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent_pad : R.drawable
+                .arrow_received_pad );
+        viewHolder.title.setText( m.getDate() );
         viewHolder.text.setText( m.getPattern() );
 
         return convertView;
@@ -78,5 +83,6 @@ public class OneConvAdapter extends BaseAdapter{
 
     protected static class ViewHolder{
         TextView title, text;
+        ImageView image;
     }
 }
