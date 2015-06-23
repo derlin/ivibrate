@@ -132,6 +132,7 @@ public class AccountsManager{
 
 
     public synchronized boolean addAccount( String name, String regid ){
+        if(name == null || regid == null) return false;
 
         if( users.containsKey( name ) ){
             if( users.get( name ).equals( regid ) ) return true;
@@ -168,7 +169,7 @@ public class AccountsManager{
 
     public synchronized boolean updateRegid( String name, String regid ){
 
-        if( name == null ){
+        if( name == null || regid == null){
             return false;
         }
 
@@ -177,9 +178,9 @@ public class AccountsManager{
             Statement stmt = c.createStatement();
 
             String sql = String.format( "UPDATE %s SET %s = '%s' WHERE %s = '%s'", //
-                    ACCOUNT_TABLE, COL_NAME, name, COL_REGID, regid );
+                    ACCOUNT_TABLE, COL_REGID, regid, COL_NAME, name );
 
-            stmt.executeUpdate( sql );
+            int i = stmt.executeUpdate( sql );
             stmt.close();
             c.close();
 
@@ -235,7 +236,9 @@ public class AccountsManager{
 
 
     private static Connection getConnection() throws SQLException{
-        return DriverManager.getConnection( "jdbc:sqlite:" + DB_PATH );
+        Connection connection = DriverManager.getConnection( "jdbc:sqlite:" + DB_PATH );
+        connection.setAutoCommit(true);
+        return connection;
     }
 
 }//end class

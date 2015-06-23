@@ -31,9 +31,11 @@ public class RegisterProcessor implements IPayloadProcessor{
     @Override
     public void handleMessage( CcsMessage msg ){
         String accountName = msg.getPayload().get( GcmConstants.MESSAGE_KEY );
+        String regid = msg.getFromRegid();
+
         AccountsManager dao = AccountsManager.getInstance();
 
-        if(dao.addAccount( accountName, msg.getFrom() )){
+        if(dao.addAccount( accountName, regid )){
 
             Map<String, String> payload = msg.getPayload();
             payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_REGISTER );

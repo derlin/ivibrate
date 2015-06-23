@@ -377,7 +377,7 @@ public class CcsClient{
     public void connect() throws XMPPException{
         config = new ConnectionConfiguration( GCM_SERVER, GCM_PORT );
         config.setSecurityMode( SecurityMode.enabled );
-        config.setReconnectionAllowed( true );
+        config.setReconnectionAllowed( false );
         config.setRosterLoadedAtLogin( false );
         config.setSendPresence( false );
         config.setSocketFactory( SSLSocketFactory.getDefault() );

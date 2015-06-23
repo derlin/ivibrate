@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Represents a message for CCS based massaging.
  */
-public class CcsMessage {
+public class CcsMessage{
 
     /**
      * Recipient-ID.
@@ -39,26 +39,34 @@ public class CcsMessage {
      */
     private Map<String, String> mPayload;
 
-    public CcsMessage(String from, String category, String messageId, Map<String, String> payload) {
+
+    public CcsMessage( String from, String category, String messageId, Map<String, String> payload ){
         mFrom = from;
         mCategory = category;
         mMessageId = messageId;
         mPayload = payload;
     }
-    
-    public String getFrom() {
+
+
+    public String getFrom(){
         return mFrom;
     }
 
-    public String getCategory() {
+
+    public String getCategory(){
         return mCategory;
     }
 
-    public String getMessageId() {
+
+    public String getMessageId(){
         return mMessageId;
     }
 
-    public Map<String, String> getPayload() {
+
+    public String getFromRegid(){ return getPayload() == null ? null : getPayload().get( GcmConstants.REGID_KEY );}
+
+
+    public Map<String, String> getPayload(){
         return mPayload;
     }
 }

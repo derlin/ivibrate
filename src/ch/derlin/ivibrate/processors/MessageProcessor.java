@@ -32,11 +32,12 @@ public class MessageProcessor implements IPayloadProcessor{
             AccountsManager dao = AccountsManager.getInstance();
             String account = msg.getPayload().get( GcmConstants.TO_KEY );
 
-            String to = dao.getRegistrationId( account );
+            String to = dao.getRegistrationId( account );  // "0764143203" );// TODO
+            String from = dao.getName( msg.getFromRegid() );
 
             Map<String, String> payload = msg.getPayload();
             payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
-            payload.put( GcmConstants.FROM_KEY, dao.getName( msg.getFrom() ) );
+            payload.put( GcmConstants.FROM_KEY, from );
             String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
             CcsClient.getInstance().send( jsonRequest );
 
