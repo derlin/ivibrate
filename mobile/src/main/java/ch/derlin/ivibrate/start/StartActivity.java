@@ -1,8 +1,6 @@
 package ch.derlin.ivibrate.start;
 
 import android.content.*;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -21,7 +19,6 @@ import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.MainActivity;
-import ch.derlin.ivibrate.wear.SendToWearableService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
@@ -32,24 +29,6 @@ public class StartActivity extends FragmentActivity{
     private String phone;
 
     // ----------------------------------------------------
-
-    private GcmCallbacks mCallbacks = new GcmCallbacks(){
-
-        @Override
-        public void onNewRegistration( String account ){
-            if( account.equals( phone ) ){
-
-                PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).edit() //
-                        .putString( getString( R.string.pref_phone ), phone ) //
-                        .commit();
-
-                Toast.makeText( getApplicationContext(), "Successfully registered (" + phone + ")", Toast
-                        .LENGTH_LONG ).show();
-
-                launchMainActivity();
-            }
-        }
-    };
 
     private ServiceConnection mConnection = new ServiceConnection(){
         @Override
@@ -64,10 +43,10 @@ public class StartActivity extends FragmentActivity{
         }
     };
 
+    // ----------------------------------------------------
 
     @Override
     protected void onDestroy(){
-        mCallbacks.unregisterSelf( this );
         unbindService( mConnection );
         super.onDestroy();
     }
@@ -78,7 +57,6 @@ public class StartActivity extends FragmentActivity{
         super.onStart();
         Intent intent = new Intent(this, GcmSenderService.class);
         bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
-        mCallbacks.registerSelf( this );
     }
 
     // ----------------------------------------------------
@@ -91,10 +69,6 @@ public class StartActivity extends FragmentActivity{
         if( !checkPlayServices() ){
             showErrorDialog( "Be sure you have google play services installed and try again.", true );
         }
-        //        if( !checkWearable() ){
-        //            showErrorDialog( "Be sure you have android wear installed and a connected device and try again
-        // .", true );
-        //        }
 
         phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ), null );
         setContentView( R.layout.activity_start );
@@ -113,13 +87,9 @@ public class StartActivity extends FragmentActivity{
                 }
             }; // wait for the app to start TODO
             GcmSenderService.getInstance().registerToServer( phone );
+            launchMainActivity();
 
         }else{
-
-            if( !checkNetwork() ){
-                showErrorDialog( "You need an internet connection to register.", true );
-            }
-
 
             getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new PhoneFragment() ).commit();
         }
@@ -150,19 +120,6 @@ public class StartActivity extends FragmentActivity{
     }
 
 
-    private boolean checkNetwork(){
-        ConnectivityManager connectivityManager = ( ConnectivityManager ) getSystemService( Context
-                .CONNECTIVITY_SERVICE );
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
-
-
-    private boolean checkWearable(){
-        return SendToWearableService.getInstance().isConnected();
-    }
-
-
     private boolean checkPlayServices(){
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable( this );
         if( resultCode != ConnectionResult.SUCCESS ){
@@ -182,8 +139,8 @@ public class StartActivity extends FragmentActivity{
      * first fragment: enter phone
      * ****************************************************************/
     class PhoneFragment extends Fragment implements View.OnClickListener{
-        EditText et;
 
+        EditText et;
 
         @Override
         public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ){
@@ -201,6 +158,7 @@ public class StartActivity extends FragmentActivity{
             phone = et.getText().toString();
             if( phone.matches( "07[0-9]{8}" ) ){
                 GcmSenderService.getInstance().registerToServer( phone );
+                launchMainActivity();
 
             }else{
                 Toast.makeText( getActivity(), "Please, enter a valid phone number.", Toast.LENGTH_SHORT ).show();

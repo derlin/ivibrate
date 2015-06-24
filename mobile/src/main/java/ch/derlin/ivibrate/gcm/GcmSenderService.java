@@ -3,10 +3,8 @@ package ch.derlin.ivibrate.gcm;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
-import android.os.Binder;
-import android.os.Bundle;
-import android.os.IBinder;
+import android.content.SharedPreferences;
+import android.os.*;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -63,9 +61,7 @@ public class GcmSenderService extends Service{
     public void onCreate(){
         super.onCreate();
         gcm = GoogleCloudMessaging.getInstance( getApplicationContext() );
-        regid = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
-                .getString( getString( R.string.pref_regid ), null );
-        if( regid == null ) loadRegIdAsync();
+        loadRegIdAsync();
         INSTANCE = this;
         mBroadcastManager = LocalBroadcastManager.getInstance( this );
     }
@@ -96,10 +92,26 @@ public class GcmSenderService extends Service{
 
 
     public void registerToServer( String phone ){
-        Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_REGISTER );
-        data.putString( MESSAGE_KEY, phone );
-        sendData( data );
+        String regidKey = getApplicationContext().getString( R.string.pref_regid );
+        String versionKey = getApplicationContext().getString( R.string.pref_app_version );
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+        String prefRegId = prefs.getString( regidKey, null );
+        String prefsVersion = prefs.getString( versionKey, "" );
+
+        if( prefRegId == null || !prefRegId.equals( regid ) || !prefsVersion.equals( Build.VERSION.RELEASE ) ){
+            // refresh regidt
+            prefs.edit() //
+                    .putString( regidKey, regid ) //
+                    .putString( versionKey, Build.VERSION.RELEASE ) //
+                    .apply();
+            // send new regid to server
+            Bundle data = new Bundle();
+            data.putString( ACTION_KEY, GcmConstants.ACTION_REGISTER );
+            data.putString( MESSAGE_KEY, phone );
+            sendData( data );
+            Log.d( getPackageName(), "NEW REGISTRATION " + Build.VERSION.RELEASE );
+        }
     }
 
 
@@ -141,7 +153,8 @@ public class GcmSenderService extends Service{
         notify( data );
     }
 
-    public void sendMessage(String to, long[] pattern){
+
+    public void sendMessage( String to, long[] pattern ){
         sendMessage( to, pattern, null );
     }
 
@@ -159,7 +172,7 @@ public class GcmSenderService extends Service{
     }
 
 
-    public void sendData( Bundle data){
+    public void sendData( Bundle data ){
         data.putString( REGID_KEY, regid ); // always put regid
         try{
             String id = getMessageId();
@@ -171,7 +184,8 @@ public class GcmSenderService extends Service{
 
     // ----------------------------------------------------
 
-    private void notify(Bundle data){
+
+    private void notify( Bundle data ){
         Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
         i.putExtra( EXTRA_EVT_TYPE, ACTION_MESSAGE_SENT );
         i.putExtras( data );
@@ -179,7 +193,7 @@ public class GcmSenderService extends Service{
     }
 
 
-    private void saveMessage(Message message){
+    private void saveMessage( Message message ){
         // add message to db
         Context context = App.getAppContext();
         try( SqlDataSource src = new SqlDataSource( context, true ) ){
