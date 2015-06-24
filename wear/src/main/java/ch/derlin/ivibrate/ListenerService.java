@@ -1,8 +1,14 @@
 package ch.derlin.ivibrate;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
+import ch.derlin.ivibrate.main.Friend;
+import ch.derlin.ivibrate.main.MainActivity;
 import com.google.android.gms.wearable.*;
+
+import java.util.ArrayList;
 
 /**
  * Created by michaelHahn on 1/16/15.
@@ -10,7 +16,7 @@ import com.google.android.gms.wearable.*;
  */
 public class ListenerService extends WearableListenerService{
 
-    private static final String WEARABLE_DATA_PATH = "/derlin/ivibrate/";;
+    private static final int INDEX_IN_PATTERN_TO_REPEAT = -1; // -1: don't repeatr
 
 
     @Override
@@ -18,6 +24,7 @@ public class ListenerService extends WearableListenerService{
 
         Log.d( "wearable", "listener called" );
         DataMap dataMap;
+
         for( DataEvent event : dataEvents ){
 
             // Check the data type
@@ -25,22 +32,43 @@ public class ListenerService extends WearableListenerService{
                 // Check the data path
                 dataMap = DataMapItem.fromDataItem( event.getDataItem() ).getDataMap();
                 String path = event.getDataItem().getUri().getPath();
+                if( path.equals( WearableConstants.PHONE_TO_WEARABLE_DATA_PATH ) ){
 
-                if( path.equals( WEARABLE_DATA_PATH ) && dataMap.containsKey( "pattern" ) ){
-                    Vibrator vibrator = ( Vibrator ) getSystemService( VIBRATOR_SERVICE );
-                    long[] pattern = dataMap.getLongArray( "pattern" );
+                    if( dataMap.containsKey( "pattern" ) ){
+                        playPattern( dataMap.getLongArray( "pattern" ) );
 
-                    //-1 - don't repeat
-                    final int indexInPatternToRepeat = -1;
-                    vibrator.vibrate( pattern, indexInPatternToRepeat );
-                    Log.d( "wearable", "pattern received and played" );
+                    }else if( dataMap.containsKey( "contacts" ) ){
+                        ArrayList<DataMap> maps = dataMap.getDataMapArrayList( "contacts" );
+                        ArrayList<Friend> contacts = new ArrayList<>(  );
+                        for( DataMap map : maps ){
+                            contacts.add( new Friend( map ) );
+                        }//end for
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable( "contacts", contacts );
+                        Intent intent = new Intent( this, MainActivity.class );
+                        intent.putExtras( bundle );
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity( intent );
+                    }
                 }
 
                 Log.v( "wearable", "DataMap received on watch: " + dataMap );
+
             }else{
+                SendToPhoneService.getInstance().sendStatus( false );
                 Log.d( "wearable", "event type " + event.getType() );
 
             }
         }
+    }
+
+
+    private void playPattern( long[] pattern ){
+        if( pattern == null ) return;
+        Vibrator vibrator = ( Vibrator ) getSystemService( VIBRATOR_SERVICE );
+        vibrator.vibrate( pattern, INDEX_IN_PATTERN_TO_REPEAT );
+        Log.d( "wearable", "pattern received and played" );
+
+        SendToPhoneService.getInstance().sendStatus( true );
     }
 }

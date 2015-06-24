@@ -49,6 +49,10 @@ public class Friend implements Parcelable{
         this.phone = phone;
     }
 
+    public String getDisplayName(){
+        LocalContactDetails details = getDetails();
+        return details == null ? phone : details.getName();
+    }
 
     public long getMessagesCount(){
 

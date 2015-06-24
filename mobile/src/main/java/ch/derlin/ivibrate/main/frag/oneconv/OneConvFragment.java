@@ -15,7 +15,6 @@ import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
-import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
 import com.google.gson.reflect.TypeToken;
 
@@ -102,8 +101,7 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
         if( getArguments() != null ){
             mFriend = getArguments().getParcelable( ARG_FRIEND );
-            getActivity().setTitle( mFriend.getDetails().getName() );
-            LocalContactDetails details = mFriend.getDetails();
+            getActivity().setTitle( mFriend.getDisplayName() );
         }
 
         // remove logo but show the arrow back

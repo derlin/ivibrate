@@ -27,6 +27,7 @@ import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
+import ch.derlin.ivibrate.utils.LocalContactsManager;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.wear.WearableCallbacks;
 
@@ -139,6 +140,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
      * ****************************************************************/
 
     private GcmCallbacks mGcmCallbacks = new GcmCallbacks(){
+
         @Override
         public void onAccountsReceived( String[] accounts ){
             mAvailableContacts = getAvailableContacts( accounts );
@@ -150,10 +152,15 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             }
         }
 
+
+
         @Override
-        public void onNewRegistration( String account ){
-            // TODO
-            Toast.makeText( MainActivity.this, "New registration: " + account, Toast.LENGTH_SHORT ).show();
+        public void onNewRegistration( String phone ){
+            if(mAvailableContacts != null){
+                LocalContactDetails details = LocalContactsManager.getContactDetails( phone );
+                if(details != null) mAvailableContacts.add( details );
+            }
+            Toast.makeText( MainActivity.this, "New registration: " + phone, Toast.LENGTH_SHORT ).show();
         }
 
 

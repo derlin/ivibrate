@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="ch.derlin.ivibrate"
+<manifest
+    package="ch.derlin.ivibrate"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -27,7 +28,7 @@
             android:name=".main.MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/main_activity_label"
-            android:launchMode="singleTask"/>
+            android:launchMode="singleTask" />
 
         <activity
             android:name=".pattern.PatternActivity"
@@ -48,6 +49,12 @@
         <service
             android:name=".wear.SendToWearableService"
             android:exported="false" />
+
+        <service android:name=".wear.ListenToWearableService">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
 
         <!-- gcm -->
         <receiver

@@ -19,13 +19,14 @@ public class ListConvAdapter extends BaseAdapter{
     private List<Friend> mList;
     private Activity context;
 
+
     public ListConvAdapter( Activity context, List<Friend> mList ){
         this.mList = mList;
         this.context = context;
     }
 
 
-    public void add(Friend f){
+    public void add( Friend f ){
         mList.add( f );
         notifyDataSetChanged();
     }
@@ -33,11 +34,12 @@ public class ListConvAdapter extends BaseAdapter{
 
     public void remove( Friend friend ){
         int position = mList.indexOf( friend );
-        if(position >= 0){
+        if( position >= 0 ){
             mList.remove( position );
             notifyDataSetChanged();
         }
     }
+
 
     @Override
     public int getCount(){
@@ -61,7 +63,7 @@ public class ListConvAdapter extends BaseAdapter{
     public View getView( int position, View convertView, ViewGroup parent ){
         ViewHolder viewHolder;
 
-        if(convertView == null){
+        if( convertView == null ){
             convertView = context.getLayoutInflater().inflate( R.layout.adapter_conv, parent, false );
 
             viewHolder = new ViewHolder();
@@ -75,19 +77,18 @@ public class ListConvAdapter extends BaseAdapter{
 
         Friend f = mList.get( position );
         LocalContactDetails details = f.getDetails();
-        viewHolder.title.setText(details != null ? f.getDetails().getName() : f.getPhone());
-        if(details != null && details.getPhotoUri() != null){
+        viewHolder.title.setText( f.getDisplayName() );
+        if( details != null && details.getPhotoUri() != null ){
             viewHolder.image.setImageURI( f.getDetails().getPhotoUri() );
         }else{
-            viewHolder.image.setImageResource( R.drawable.qm_face);
+            viewHolder.image.setImageResource( R.drawable.qm_face );
         }
 
         long count = f.getMessagesCount();
-        viewHolder.text.setText( String.format( "%d message%s.", count, count > 1 ? "s" : "" ));
+        viewHolder.text.setText( String.format( "%d message%s.", count, count > 1 ? "s" : "" ) );
 
         return convertView;
     }
-
 
 
     // ----------------------------------------------------

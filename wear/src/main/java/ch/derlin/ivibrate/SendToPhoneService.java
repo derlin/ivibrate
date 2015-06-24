@@ -1,22 +1,22 @@
-package ch.derlin.ivibrate.wear;
+package ch.derlin.ivibrate;
 
 import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wearable.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
-import static ch.derlin.ivibrate.wear.WearableConstants.*;
+import static ch.derlin.ivibrate.WearableConstants.WEARABLE_TO_PHONE_DATA_PATH;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -25,18 +25,17 @@ import static ch.derlin.ivibrate.wear.WearableConstants.*;
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-public class SendToWearableService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient
+public class SendToPhoneService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient
         .OnConnectionFailedListener{
 
-    private static SendToWearableService INSTANCE;
-    private LocalBroadcastManager mBroadcastManager;
+    private static SendToPhoneService INSTANCE;
 
     // ----------------------------------------------------
 
     public class SendToWearableBinder extends Binder{
-        SendToWearableService getService(){
+        SendToPhoneService getService(){
             // Return this instance of LocalService so clients can call public methods
-            return SendToWearableService.this;
+            return SendToPhoneService.this;
         }
     }
 
@@ -47,7 +46,7 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
     private GoogleApiClient mGoogleClient = null;
 
 
-    public static SendToWearableService getInstance(){
+    public static SendToPhoneService getInstance(){
         return INSTANCE;
     }
 
@@ -56,7 +55,6 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
     public void onCreate(){
         super.onCreate();
         mGoogleClient = getGoogleClient();
-        mBroadcastManager = LocalBroadcastManager.getInstance( this );
         INSTANCE = this;
     }
 
@@ -78,51 +76,67 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
     }
 
 
-    public void sendPattern( long[] pattern ){
+    /**
+     * Handle action Foo in the provided background thread with the provided
+     * parameters.
+     */
+    public void sendStatus( boolean success ){
         DataMap dataMap = new DataMap();
+        dataMap.putBoolean( "result", success );
+        broadcastDatamapToPhoneNodes( dataMap );
+    }
+
+
+    public void askForContacts(){
+        DataMap dataMap = new DataMap();
+        dataMap.putString( "action", "getContacts" );
+        broadcastDatamapToPhoneNodes( dataMap );
+    }
+
+
+    public void send( String phone, long[] pattern, String text ){
+        DataMap dataMap = new DataMap();
+        dataMap.putString( "action", "send" );
+        dataMap.putString( "phone", phone );
         dataMap.putLongArray( "pattern", pattern );
-        broadcastDatamapToWearableNodes( dataMap );
+        dataMap.putString( "text", text );
+        broadcastDatamapToPhoneNodes( dataMap, "IVibrate, vibe sent" );
+
     }
 
 
-    public void sendContacts( ArrayList<DataMap> details ){
-        DataMap dataMap = new DataMap();
-        dataMap.putDataMapArrayList( "contacts", details );
-        broadcastDatamapToWearableNodes( dataMap );
-    }
-
-
-    private void broadcastDatamapToWearableNodes( final DataMap dataMap ){
+    private void broadcastDatamapToPhoneNodes( final DataMap dataMap, final String toast ){
         dataMap.putLong( "time", new Date().getTime() );
         // we need a thread to avoid exceptions calling await
-        new Thread(){
+        new AsyncTask<Void, Void, Status>(){
 
             @Override
-            public void run(){
+            public com.google.android.gms.common.api.Status doInBackground( Void... params ){
+                // Construct a DataRequest and send over the data layer
+                PutDataMapRequest putDMR = PutDataMapRequest.create( WEARABLE_TO_PHONE_DATA_PATH );
+                putDMR.getDataMap().putAll( dataMap );
+                PutDataRequest request = putDMR.asPutDataRequest();
+                DataApi.DataItemResult result = Wearable.DataApi.putDataItem( mGoogleClient, request ).await();
 
-                List<Node> nodes = Wearable.NodeApi.getConnectedNodes( mGoogleClient ).await().getNodes();
-
-                // send datamap
-                for( Node node : nodes ){
-
-                    // Construct a DataRequest and send over the data layer
-                    PutDataMapRequest putDMR = PutDataMapRequest.create( PHONE_TO_WEARABLE_DATA_PATH );
-                    putDMR.getDataMap().putAll( dataMap );
-                    PutDataRequest request = putDMR.asPutDataRequest();
-                    DataApi.DataItemResult result = Wearable.DataApi.putDataItem( mGoogleClient, request ).await();
-                    if( result.getStatus().isSuccess() ){
-                        Log.v( "myTag", "DataMap: " + dataMap + " sent to: " + node.getDisplayName() );
-                        mBroadcastManager.sendBroadcast( getIntent( SUCCESS_EVT_TYPE, node.getDisplayName() ) );
-
-                    }else{
-                        mBroadcastManager.sendBroadcast( getIntent( FAIL_EVT_TYPE, "Failed to send pattern to " +
-                                node.getDisplayName() ) );
-                        // Log an error
-                        Log.v( "myTag", "ERROR: failed to send DataMap" );
-                    }
-                }
+                return result.getStatus();
             }
-        }.start();
+
+
+            @Override
+            protected void onPostExecute( com.google.android.gms.common.api.Status status ){
+                if( toast != null ){
+                    Toast.makeText( getApplicationContext(), toast + ": "  //
+                                    + ( status.isSuccess() ? "success" : "error" ),//
+                            Toast.LENGTH_SHORT ).show();
+                }
+                Log.i( getPackageName(), "Data sent to phone. Status => " + status );
+            }
+        }.execute();
+    }
+
+
+    private void broadcastDatamapToPhoneNodes( final DataMap dataMap ){
+        broadcastDatamapToPhoneNodes( dataMap, null );
     }
 
 
@@ -142,20 +156,6 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
 
     public boolean isConnected(){
         return mGoogleClient.isConnected();
-    }
-
-
-    protected Intent getIntent( String evtType ){
-        Intent i = new Intent( SEND_TO_WEARABLE_SERVICE_INTENT_FILTER );
-        i.putExtra( EXTRA_EVT_TYPE, evtType );
-        return i;
-    }
-
-
-    protected Intent getIntent( String evtType, String msg ){
-        Intent i = getIntent( evtType );
-        i.putExtra( EXTRA_STRING, msg );
-        return i;
     }
 
 
