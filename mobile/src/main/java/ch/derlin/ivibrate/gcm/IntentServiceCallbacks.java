@@ -74,7 +74,8 @@ public class IntentServiceCallbacks extends GcmCallbacks{
                 .setAutoCancel( true ) //
                 .setSmallIcon( R.mipmap.ic_launcher )  //
                 .setContentTitle( notificationTitle )  //
-                .setContentText( notificationMessage ); //
+                .setContentText( notificationMessage ) //
+                .setLocalOnly( true ); // don't show it in the watch
 
         Intent targetIntent = new Intent( context, MainActivity.class );
         targetIntent.putExtra( GcmConstants.NOTIFICATION_KEY, true );
