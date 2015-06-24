@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.MainActivity;
 import com.google.android.gms.common.ConnectionResult;
@@ -158,6 +157,8 @@ public class StartActivity extends FragmentActivity{
             phone = et.getText().toString();
             if( phone.matches( "07[0-9]{8}" ) ){
                 GcmSenderService.getInstance().registerToServer( phone );
+                PreferenceManager.getDefaultSharedPreferences( getActivity() ).edit() //
+                .putString( getActivity().getString( R.string.pref_phone ), phone ). commit();
                 launchMainActivity();
 
             }else{
