@@ -7,11 +7,23 @@ import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
 /**
- * Created by lucy on 17/06/15.
+ * This class handles the local broadcast made by the
+ * {@link SendToWearableService}.
+ * It is meant to be overriden. To use it, create a child
+ * class overriding the methods you need and call {@link #registerSelf(Context)}
+ * when the activity/fragment starts. Don't forget to call
+ * {@link #unregisterSelf(Context)} upon destroy.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public abstract class WearableCallbacks extends BroadcastReceiver{
 
-    private static final IntentFilter INTENT_FILTER = new IntentFilter( WearableConstants.SEND_TO_WEARABLE_SERVICE_INTENT_FILTER );
+    private static final IntentFilter INTENT_FILTER = //
+            new IntentFilter( WearableConstants.SEND_TO_WEARABLE_SERVICE_INTENT_FILTER );
 
 
     public abstract void onFail( String errorMsg );

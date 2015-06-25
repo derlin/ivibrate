@@ -11,9 +11,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import ch.derlin.ivibrate.R;
 
-/**
- * Created by lucy on 23/06/15.
- */
+ /**
+  * Fragment displayed to allow the user to add a text message
+  * to the vibration pattern.
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class MessageFragment extends Fragment implements View.OnClickListener{
     Button mLeftButton, mRightButton;
     EditText mEditText;

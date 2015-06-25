@@ -27,7 +27,7 @@ import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
-import ch.derlin.ivibrate.utils.LocalContactsManager;
+import ch.derlin.ivibrate.sql.LocalContactsManager;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.wear.WearableCallbacks;
 
@@ -36,17 +36,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static ch.derlin.ivibrate.utils.LocalContactsManager.getAvailableContacts;
+import static ch.derlin.ivibrate.sql.LocalContactsManager.getAvailableContacts;
 
-
+/**
+ * The main activity. On start, shows the {@link ListConversationsFragment}.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
+ */
 public class MainActivity extends ActionBarActivity implements OneConvFragment.OneConvFragmentCallbacks,
         ListConversationsFragment.ConversationFragmentCallbacks{
 
     private static final int PATTERN_REQUEST_CODE = 7834;
+
     private ListConversationsFragment mListConvFragment;
     private OneConvFragment mOneConvFragment;
+
     private List<LocalContactDetails> mAvailableContacts;
     private Map<String, Friend> mFriends;
+
     private boolean mNewConvPending = false;
 
     /* *****************************************************************
@@ -110,13 +121,13 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
     @Override
     protected void onNewIntent( Intent intent ){
-        Friend f = getFriendExtra( intent );
-        if(f != null){
+        Friend f = getFriendExtra();
+        if( f != null ){
             onConversationSelected( f );
         }
     }
 
-/* *****************************************************************
+    /* *****************************************************************
      * Wearable callbacks
      * ****************************************************************/
 
@@ -153,12 +164,11 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         }
 
 
-
         @Override
         public void onNewRegistration( String phone ){
-            if(mAvailableContacts != null){
+            if( mAvailableContacts != null ){
                 LocalContactDetails details = LocalContactsManager.getContactDetails( phone );
-                if(details != null) mAvailableContacts.add( details );
+                if( details != null ) mAvailableContacts.add( details );
             }
             Toast.makeText( MainActivity.this, "New registration: " + phone, Toast.LENGTH_SHORT ).show();
         }
@@ -226,8 +236,8 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
-    public void onSendMessageTo( Friend friend, Message ... message ){
-        if(message.length == 0){
+    public void onSendMessageTo( Friend friend, Message... message ){
+        if( message.length == 0 ){
             // no pattern, show the screen to tap one
             Intent i = new Intent( this, PatternActivity.class );
             Bundle bundle = new Bundle();
@@ -236,7 +246,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
             startActivityForResult( i, PATTERN_REQUEST_CODE );
 
         }else{
-            Message m = message[0];
+            Message m = message[ 0 ];
             // one pattern, just send it
             GcmSenderService.getInstance().sendMessage( friend.getPhone(), m.getPatternObject(), m.getText() );
         }
@@ -255,7 +265,9 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         SendToWearableService.getInstance().sendPattern( pattern );
     }
 
-    // ----------------------------------------------------
+    /* *****************************************************************
+     * friends management
+     * ****************************************************************/
 
 
     private void loadFriends(){
@@ -283,10 +295,11 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         }.execute();
     }
 
+
     private void onFriendsLoaded(){
 
-        Friend f = getFriendExtra( getIntent() );
-        if(f != null){
+        Friend f = getFriendExtra();
+        if( f != null ){
             onConversationSelected( f );
         }else{
             // first load, launch the conversation fragment
@@ -297,19 +310,19 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         }
     }
 
-    private Friend getFriendExtra(Intent i){
+
+    private Friend getFriendExtra(){
         Bundle extras = getIntent().getExtras();
         // if a notification was pressed, show the contact
-        if(extras != null && extras.containsKey( GcmConstants.NOTIFICATION_KEY )){
+        if( extras != null && extras.containsKey( GcmConstants.NOTIFICATION_KEY ) ){
             String from = extras.getString( GcmConstants.FROM_KEY );
-            if(mFriends != null && mFriends.containsKey( from )){
+            if( mFriends != null && mFriends.containsKey( from ) ){
                 return mFriends.get( from );
             }
         }
 
         return null;
     }
-    // ----------------------------------------------------
 
 
     public void addConversation(){
@@ -337,15 +350,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
                         String strName = arrayAdapter.getItem( which );
 
                         LocalContactDetails details = mAvailableContacts.get( which );
-                        // TODO: simplify
-//                        if( !details.getName().equals( strName ) ){
-//                            for( LocalContactDetails lcd : mAvailableContacts ){
-//                                if( lcd.getName().equals( strName ) ){
-//                                    details = lcd;
-//                                    break;
-//                                }
-//                            }//end for
-//                        }
 
                         dialog.dismiss();
 

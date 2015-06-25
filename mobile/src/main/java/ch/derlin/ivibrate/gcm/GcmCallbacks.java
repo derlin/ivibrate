@@ -6,13 +6,24 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.sql.entities.Message;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
 /**
- * Created by lucy on 17/06/15.
+ * This class is meant to be overriden to ease the process of
+ * responding to GCM events.
+ *
+ * Each broadcasted event by the GCM service has a
+ * method associated.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class GcmCallbacks extends BroadcastReceiver{
 
@@ -68,13 +79,9 @@ public class GcmCallbacks extends BroadcastReceiver{
                     Long mesgId = Long.parseLong( intent.getStringExtra( MESSAGE_ID_KEY ) );
                     if( mesgId != null ) onAckReceived( intent.getStringExtra( FROM_KEY ), mesgId );
                 }catch( NumberFormatException e ){
-                    Log.d( "ACTION_ACK", "Could not parse message id " );
+                    Log.d( App.TAG, "GCMCallbacks - Could not parse message id for action ack." );
                 }
                 break;
-
-            //            case MESG_TYPE_NACK:
-            //                onNackReceived();
-            //                break;
 
             case ACTION_GET_ACCOUNTS:
                 String string = intent.getStringExtra( ACCOUNTS_KEY );

@@ -5,12 +5,18 @@ import android.os.Parcelable;
 import android.util.Log;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.sql.SqlDataSource;
-import ch.derlin.ivibrate.utils.LocalContactsManager;
+import ch.derlin.ivibrate.sql.LocalContactsManager;
 
 import java.sql.SQLException;
 
 /**
- * Created by lucy on 19/06/15.
+ * Entity representing a friend present in the db.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class Friend implements Parcelable{
 
@@ -49,10 +55,12 @@ public class Friend implements Parcelable{
         this.phone = phone;
     }
 
+
     public String getDisplayName(){
         LocalContactDetails details = getDetails();
         return details == null ? phone : details.getName();
     }
+
 
     public long getMessagesCount(){
 

@@ -1,6 +1,5 @@
 package ch.derlin.ivibrate.wear;
 
-import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -8,6 +7,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import ch.derlin.ivibrate.sql.entities.Friend;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.*;
@@ -19,11 +19,15 @@ import java.util.List;
 import static ch.derlin.ivibrate.wear.WearableConstants.*;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p/>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
+ * A singleton service used to send data/message to all
+ * connected devices. Is started with the application
+ * (see {@link ch.derlin.ivibrate.app.App})
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class SendToWearableService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient
         .OnConnectionFailedListener{
@@ -71,6 +75,8 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
         super.onDestroy();
     }
 
+    // ----------------------------------------------------
+
 
     @Override
     public IBinder onBind( Intent intent ){
@@ -81,6 +87,15 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
     public void sendPattern( long[] pattern ){
         DataMap dataMap = new DataMap();
         dataMap.putLongArray( "pattern", pattern );
+        broadcastDatamapToWearableNodes( dataMap );
+    }
+
+
+    public void sendPattern( long[] pattern, Friend from ){
+        DataMap dataMap = new DataMap();
+        dataMap.putLongArray( "pattern", pattern );
+        dataMap.putString( "phone", from.getPhone() );
+        dataMap.putString( "name", from.getDisplayName() );
         broadcastDatamapToWearableNodes( dataMap );
     }
 
@@ -125,6 +140,8 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
         }.start();
     }
 
+    // ----------------------------------------------------
+
 
     public GoogleApiClient getGoogleClient(){
 
@@ -143,6 +160,8 @@ public class SendToWearableService extends Service implements GoogleApiClient.Co
     public boolean isConnected(){
         return mGoogleClient.isConnected();
     }
+
+    // ----------------------------------------------------
 
 
     protected Intent getIntent( String evtType ){

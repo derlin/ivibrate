@@ -23,7 +23,14 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * Created by lucy on 19/06/15.
+ * Fragment displaying the list of contacts/conversations.
+ * The user can select, add and delete one.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class ListConversationsFragment extends Fragment implements AdapterView.OnItemClickListener, AdapterView
         .OnItemLongClickListener{

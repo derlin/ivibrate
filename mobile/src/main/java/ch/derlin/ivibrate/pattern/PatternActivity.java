@@ -9,6 +9,18 @@ import android.util.Log;
 import android.view.MenuItem;
 import ch.derlin.ivibrate.R;
 
+/**
+ * Activity used to ask a pattern and an optional text
+ * to the user in order to send a message.
+ * This activity should be called with {@link #startActivityForResult(Intent, int)}.
+ * It returns a status code and a bundle with "pattern" and "text" extras.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
+ */
 public class PatternActivity extends ActionBarActivity implements PatternFragment.PatternFragmentCallbacks,
         MessageFragment.MessageFragmentCallbacks{
 
@@ -23,23 +35,24 @@ public class PatternActivity extends ActionBarActivity implements PatternFragmen
 
         mBundle = getIntent().getExtras();
 
-        setSupportActionBar( ( Toolbar ) findViewById( R.id.toolbar_actionbar ) );
-        getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
+        if(toolbar != null){
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        }
 
         setFrag( new PatternFragment() );
     }
 
+    // ----------------------------------------------------
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item ){
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if( id == R.id.action_settings ){
             return true;
+
         }else if( id == android.R.id.home ){
             cancel();
             return true;
@@ -48,6 +61,7 @@ public class PatternActivity extends ActionBarActivity implements PatternFragmen
         return super.onOptionsItemSelected( item );
     }
 
+    // ----------------------------------------------------
 
     private void setFrag( Fragment f ){
         getSupportFragmentManager().beginTransaction() //
@@ -60,7 +74,10 @@ public class PatternActivity extends ActionBarActivity implements PatternFragmen
         Log.d( getPackageName(), "Pattern activity canceled" );
         finish();
     }
-    // ----------------------------------------------------
+
+    /* *****************************************************************
+     * fragments callbacks
+     * ****************************************************************/
 
 
     @Override

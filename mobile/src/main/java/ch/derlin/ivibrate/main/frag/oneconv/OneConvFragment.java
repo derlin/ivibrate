@@ -23,13 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A fragment representing a list of Items.
- * <p/>
- * Large screen devices (such as tablets) are supported by replacing the ListView
- * with a GridView.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OneConvFragmentCallbacks}
- * interface.
+ * Fragment displaying the messages of one conversation.
+ * Contains a button to send a new message. A long click
+ * on a message shows an option menu.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class OneConvFragment extends Fragment implements AbsListView.OnItemClickListener{
 
@@ -45,7 +47,11 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
         @Override
         public void onMessageReceived( String from, Message message ){
             if( mFriend.getPhone().equals( from ) ){
-                mAdapter.add( message );
+                if( message.getId() == null ){
+                    mAdapter.add( message );
+                }else{
+                    loadData();
+                }
             }
         }
 
@@ -60,15 +66,15 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
         @Override
         public void onAckReceived( String from, Long messageId ){
-            if(mFriend.getPhone().equals( from )){
-                mAdapter.setAcked(messageId);
+            if( mFriend.getPhone().equals( from ) ){
+                mAdapter.setAcked( messageId );
             }
         }
     };
     // ----------------------------------------------------
 
     public interface OneConvFragmentCallbacks{
-        public void onSendMessageTo( Friend friend, Message ... message );
+        public void onSendMessageTo( Friend friend, Message... message );
 
         public void onReplayPattern( long[] pattern );
 
@@ -104,9 +110,6 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
             getActivity().setTitle( mFriend.getDisplayName() );
         }
 
-        // remove logo but show the arrow back
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayUseLogoEnabled(false);
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         setHasOptionsMenu( true );
         loadData();
@@ -123,6 +126,10 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
         // Set OnItemClickListener so we can be notified on item clicks
         mListView.setOnItemClickListener( this );
+
+        // remove logo but show the arrow back
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayUseLogoEnabled( false );
+        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
 
         return view;
     }
@@ -170,9 +177,13 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
 
             @Override
             protected void onPostExecute( List<Message> message ){
-                mAdapter = new OneConvAdapter( getActivity(), new ArrayList<>( message ) );
-                mListView.setAdapter( mAdapter );
-                registerForContextMenu( mListView );
+                if( mAdapter == null ){
+                    mAdapter = new OneConvAdapter( getActivity(), new ArrayList<>( message ) );
+                    mListView.setAdapter( mAdapter );
+                    registerForContextMenu( mListView );
+                }else{
+                    mAdapter.addAll( message );
+                }
             }
         }.execute();
     }

@@ -6,7 +6,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 /**
- * Created by lucy on 19/06/15.
+ * Class handling the creation/update of the db.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class SqlHelper extends SQLiteOpenHelper{
 

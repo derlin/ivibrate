@@ -5,7 +5,16 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by lucy on 20/06/15.
+ * Class used to store the local details of a friend
+ * identified by its number only.
+ * Since the local details can change anytime (name change
+ * for example), they are not stored int the db, but retrieved each time.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class LocalContactDetails implements Parcelable{
 
@@ -65,6 +74,7 @@ public class LocalContactDetails implements Parcelable{
 
     // ----------------------------------------------------
 
+
     @Override
     public int describeContents(){
         return 0;
@@ -79,6 +89,7 @@ public class LocalContactDetails implements Parcelable{
         dest.writeValue( photoUri );
     }
 
+
     public static final Parcelable.Creator<LocalContactDetails> CREATOR = new Parcelable.Creator<LocalContactDetails>(){
         @Override
         public LocalContactDetails createFromParcel( Parcel source ){
@@ -88,7 +99,7 @@ public class LocalContactDetails implements Parcelable{
 
         @Override
         public LocalContactDetails[] newArray( int size ){
-            return new LocalContactDetails[size];
+            return new LocalContactDetails[ size ];
         }
     };
 }

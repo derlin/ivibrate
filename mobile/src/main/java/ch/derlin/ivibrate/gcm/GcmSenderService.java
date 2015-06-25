@@ -25,14 +25,28 @@ import java.util.Set;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
+/**
+ * Singleton service in charge of sending message
+ * to the GCM server. Can also be used as a bound service.
+ * Started with the application.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
+ */
 public class GcmSenderService extends Service{
 
-    GoogleCloudMessaging gcm;
     private static GcmSenderService INSTANCE;
-    private String regid;
+
+    private GoogleCloudMessaging gcm;
+    private String regid; // current regid of the user
     private Gson gson = new GsonBuilder().create();
+    // to generate unique message ids
     private static Random random = new Random();
     private Set<Integer> msgIdSet = new HashSet<>();
+    // to notify a message has been sent
     private LocalBroadcastManager mBroadcastManager;
 
     // ----------------------------------------------------
@@ -45,12 +59,19 @@ public class GcmSenderService extends Service{
 
     private final IBinder mBinder = new GcmSenderBinder();
 
+
+    @Override
+    public IBinder onBind( Intent intent ){
+        return mBinder;
+    }
     // ----------------------------------------------------
 
 
     public static GcmSenderService getInstance(){
         return INSTANCE;
     }
+
+    // ----------------------------------------------------
 
 
     public GcmSenderService(){
@@ -78,11 +99,6 @@ public class GcmSenderService extends Service{
     }
 
 
-    @Override
-    public IBinder onBind( Intent intent ){
-        return mBinder;
-    }
-
     // ----------------------------------------------------
 
 
@@ -91,6 +107,14 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Register to the IVibrate server, sending a phone with a regid.
+     * Note that if the current regid is already valid, no message will be sent.
+     * A regid can be updated by google (never happens in practice) or everytime the
+     * application is installed or the system is updated.
+     *
+     * @param phone the phone number of this app, in swiss format (07XXXXXXXX)
+     */
     public void registerToServer( String phone ){
         String regidKey = getApplicationContext().getString( R.string.pref_regid );
         String versionKey = getApplicationContext().getString( R.string.pref_app_version );
@@ -100,7 +124,7 @@ public class GcmSenderService extends Service{
         String prefsVersion = prefs.getString( versionKey, "" );
 
         if( prefRegId == null || !prefRegId.equals( regid ) || !prefsVersion.equals( Build.VERSION.RELEASE ) ){
-            // refresh regidt
+            // refresh regid
             prefs.edit() //
                     .putString( regidKey, regid ) //
                     .putString( versionKey, Build.VERSION.RELEASE ) //
@@ -115,6 +139,9 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Unregister to the IVibrate server.
+     */
     public void unregisterFromServer(){
         String phone = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
                 .getString( getString( R.string.pref_phone ), null );
@@ -128,6 +155,9 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Ask the server for all the phone numbers currently registered.
+     */
     public void askForAccounts(){
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, ACTION_GET_ACCOUNTS );
@@ -135,6 +165,13 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Send a message.
+     *
+     * @param to      the phone of the receiver.
+     * @param pattern the vibration pattern.
+     * @param text    the optional text.
+     */
     public void sendMessage( String to, long[] pattern, String text ){
         // save it to local db
         Message m = Message.createSentInstance( to, pattern, text );
@@ -154,16 +191,32 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Send a message.
+     *
+     * @param to      the phone number of the receiver.
+     * @param pattern the vibration pattern.
+     */
     public void sendMessage( String to, long[] pattern ){
         sendMessage( to, pattern, null );
     }
 
 
+    /**
+     * Send an echo message. Used mainly to test the server.
+     *
+     * @param pattern the vibration pattern.
+     */
     public void sendEcho( long[] pattern ){
         sendEcho( gson.toJson( pattern ) );
     }
 
 
+    /**
+     * Send an echo message. Used mainly to test the server.
+     *
+     * @param message the text message to echo.
+     */
     public void sendEcho( String message ){
         Bundle data = new Bundle();
         data.putString( ACTION_KEY, GcmConstants.ACTION_ECHO );
@@ -172,6 +225,12 @@ public class GcmSenderService extends Service{
     }
 
 
+    /**
+     * Send data to the server. Will add the regid to the data and send
+     * it as is.
+     *
+     * @param data the data bundle.
+     */
     public void sendData( Bundle data ){
         data.putString( REGID_KEY, regid ); // always put regid
         try{
@@ -185,6 +244,7 @@ public class GcmSenderService extends Service{
     // ----------------------------------------------------
 
 
+    /* notify a message has been sent. */
     private void notify( Bundle data ){
         Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
         i.putExtra( EXTRA_EVT_TYPE, ACTION_MESSAGE_SENT );
@@ -193,6 +253,7 @@ public class GcmSenderService extends Service{
     }
 
 
+    /* save a message after it has been sent. */
     private void saveMessage( Message message ){
         // add message to db
         Context context = App.getAppContext();
@@ -204,6 +265,7 @@ public class GcmSenderService extends Service{
     }
 
 
+    /* Generate a unique message id. */
     private String getMessageId(){
         int id;
         do{
@@ -215,6 +277,8 @@ public class GcmSenderService extends Service{
     }
 
 
+    /* Get the regid. Ask the regid to Google API and verify it is the same as the one
+    * stored in the shared preferences. If not, update it. */
     private void loadRegIdAsync(){
         new AsyncTask<Void, Void, Void>(){
 

@@ -18,7 +18,13 @@ import java.util.TreeMap;
 import static ch.derlin.ivibrate.sql.SqlHelper.*;
 
 /**
- * Created by lucy on 19/06/15.
+ * Utility class offering a basic ORM mapping.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class SqlDataSource implements AutoCloseable{
 

@@ -13,13 +13,20 @@ import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
-import ch.derlin.ivibrate.utils.LocalContactsManager;
+import ch.derlin.ivibrate.sql.LocalContactsManager;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 
 import java.sql.SQLException;
 
 /**
- * Created by lucy on 21/06/15.
+ * The listener which will be called upon EVERY
+ * GCM message.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class IntentServiceCallbacks extends GcmCallbacks{
 
@@ -30,12 +37,13 @@ public class IntentServiceCallbacks extends GcmCallbacks{
     @Override
     public void onMessageReceived( String from, Message message ){
         // send pattern to the watch
-        SendToWearableService.getInstance().sendPattern( message.getPatternObject() );
+        Friend f = new Friend( from );
+        SendToWearableService.getInstance().sendPattern( message.getPatternObject(), f );
 
         // add message to db
         // add message to db
         try( SqlDataSource src = new SqlDataSource( context, true ) ){
-            src.addFriend( new Friend( from ) );
+            src.addFriend( f );
             src.addMessage( message );
         }catch( SQLException e ){
             Log.d( context.getPackageName(), "error adding message " + e );
@@ -70,6 +78,7 @@ public class IntentServiceCallbacks extends GcmCallbacks{
 
 
     private void notify( String from, String notificationTitle, String notificationMessage ){
+        // build a notification for phone only
         NotificationCompat.Builder builder = new NotificationCompat.Builder( context )  //
                 .setAutoCancel( true ) //
                 .setSmallIcon( R.mipmap.ic_launcher )  //

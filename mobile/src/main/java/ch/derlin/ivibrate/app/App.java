@@ -9,20 +9,33 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * Created by lucy on 17/06/15.
+ * The application class.
+ * Contains some useful static fields and handle the
+ * start/stop of the two services, GCM and wearable.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class App extends Application{
 
     static Context appContext;
     static Gson gson = new GsonBuilder().create();
 
+    public static String TAG = "IVibrate";
+
+
     public static Context getAppContext(){
         return appContext;
     }
 
+
     public static Gson getGson(){ return gson; }
 
     //-------------------------------------------------------------
+
 
     @Override
     public void onCreate(){

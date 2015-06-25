@@ -11,9 +11,15 @@ import ch.derlin.ivibrate.sql.entities.Message;
 
 import java.util.List;
 
-/**
- * Created by lucy on 20/06/15.
- */
+ /**
+  * Adapter used to display messages from one conversation.
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class OneConvAdapter extends BaseAdapter{
 
     List<Message> mList;
@@ -25,6 +31,7 @@ public class OneConvAdapter extends BaseAdapter{
         mActivity = activity;
     }
 
+     // ----------------------------------------------------
 
     @Override
     public int getCount(){
@@ -43,6 +50,7 @@ public class OneConvAdapter extends BaseAdapter{
         return position;
     }
 
+     // ----------------------------------------------------
 
     public void add( Message message ){
         mList.add( message );
@@ -50,13 +58,33 @@ public class OneConvAdapter extends BaseAdapter{
     }
 
 
-    public void remove( Message message ){
+
+     public void addAll( List<Message> messages ){
+         this.mList = messages;
+         notifyDataSetChanged();
+     }
+
+
+     public void remove( Message message ){
         if( mList.contains( message ) ){
             mList.remove( message );
             notifyDataSetChanged();
         }
     }
 
+
+     public void setAcked( Long messageId ){
+         if( messageId == null ) return;
+
+         for( Message message : mList ){
+             if( messageId.equals( message.getId() ) ){
+                 message.setIsAcked( true );
+                 notifyDataSetChanged();
+             }
+         }//end for
+     }
+
+     // ----------------------------------------------------
 
     @Override
     public View getView( int position, View convertView, ViewGroup parent ){
@@ -77,26 +105,14 @@ public class OneConvAdapter extends BaseAdapter{
         }
 
         Message m = mList.get( position );
-        viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent_pad : R
-                .drawable.arrow_received_pad );
+        viewHolder.image.setImageResource( m.getDir().equals( Message.SENT_MSG ) ? R.drawable.arrow_sent : R
+                .drawable.arrow_received );
         viewHolder.title.setText( m.getDate() );
         viewHolder.text.setText( m.getText() == null ? m.getPattern() : m.getText() );
         viewHolder.ackImage.setImageResource( m.getIsAcked() ? R.drawable.check_checked : R.drawable.check_unchecked );
         viewHolder.ackImage.setVisibility( m.getDir().equals( Message.SENT_MSG ) ? View.VISIBLE : View.INVISIBLE );
 
         return convertView;
-    }
-
-
-    public void setAcked( Long messageId ){
-        if(messageId == null) return;
-
-        for( Message message : mList ){
-            if(messageId.equals(  message.getId() ) ){
-                message.setIsAcked( true );
-                notifyDataSetChanged();
-            }
-        }//end for
     }
 
     // ----------------------------------------------------

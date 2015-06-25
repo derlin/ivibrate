@@ -21,6 +21,15 @@ import ch.derlin.ivibrate.main.MainActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
+ /**
+  * This class checks that the application is registered
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class StartActivity extends FragmentActivity{
 
     private static final int REQUEST_GOOGLE_PLAY_SERVICES = 12;

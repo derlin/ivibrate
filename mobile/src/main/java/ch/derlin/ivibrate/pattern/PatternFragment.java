@@ -11,10 +11,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import ch.derlin.ivibrate.R;
+import ch.derlin.ivibrate.app.App;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment used prompt the user for a pattern.
+ * The activity should implement {@link ch.derlin.ivibrate.pattern.PatternFragment.PatternFragmentCallbacks}
+ * to communicate.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
+ */
 public class PatternFragment extends Fragment implements View.OnTouchListener, View.OnClickListener{
 
     View patternView;
@@ -23,11 +35,15 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
     long lastTouch;
     PatternFragmentCallbacks mCallbacks;
 
+    // ----------------------------------------------------
+
     interface PatternFragmentCallbacks{
         void onPatternValidated( long[] pattern );
 
         void onPatternCanceled();
     }
+
+    // ----------------------------------------------------
 
 
     @Override
@@ -53,6 +69,21 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
         return view;
     }
 
+    /* *****************************************************************
+     * listeners
+     * ****************************************************************/
+
+
+    @Override
+    public void onClick( View v ){
+        if( v == cancelButton || pattern.isEmpty() ){
+            mCallbacks.onPatternCanceled();
+
+        }else{
+            mCallbacks.onPatternValidated( patternToPrimitiveArray() );
+        }
+    }
+
 
     @Override
     public boolean onTouch( View v, MotionEvent event ){
@@ -73,6 +104,10 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
         return true;
     }
 
+    /* *****************************************************************
+     * private utils
+     * ****************************************************************/
+
 
     private void setPatternBg( int colorId ){
         patternView.setBackgroundColor( getResources().getColor( colorId ) );
@@ -88,27 +123,17 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
     }
 
 
-    @Override
-    public void onClick( View v ){
-        if( v == cancelButton || pattern.isEmpty() ){
-            mCallbacks.onPatternCanceled();
-
-        }else{
-            mCallbacks.onPatternValidated( patternToPrimitiveArray() );
-        }
-    }
-
-
     private long[] patternToPrimitiveArray(){
+
         long[] p = new long[ pattern.size() + 1 ];
-        StringBuffer buf = new StringBuffer( "pattern: " );
+
         p[ 0 ] = 0; // start immediately
         for( int i = 1; i < p.length; i++ ){
             p[ i ] = pattern.get( i - 1 );
-            buf.append( p[ i ] ).append( " " );
         }//end for
 
-        Log.d( getActivity().getPackageName(), buf.toString() + "." );
+        Log.d( getActivity().getPackageName(), App.getGson().toJson( p ) + "." );
+
         return p;
     }
 

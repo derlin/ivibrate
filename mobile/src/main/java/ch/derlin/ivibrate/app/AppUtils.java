@@ -2,9 +2,15 @@ package ch.derlin.ivibrate.app;
 
 import com.google.gson.reflect.TypeToken;
 
-/**
- * Created by lucy on 20/06/15.
- */
+ /**
+  * Utility class.
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class AppUtils{
 
     public static long[] getPatternFromString( String json ){

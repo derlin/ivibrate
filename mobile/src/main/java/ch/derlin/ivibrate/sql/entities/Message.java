@@ -8,7 +8,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by lucy on 19/06/15.
+ * Entity class representing a message.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class Message{
 

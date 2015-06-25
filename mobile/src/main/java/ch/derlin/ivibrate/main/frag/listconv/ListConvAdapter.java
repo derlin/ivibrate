@@ -13,7 +13,13 @@ import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import java.util.List;
 
 /**
- * Created by lucy on 19/06/15.
+ * Adapter for the list of contacts in the {@link ListConversationsFragment}.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class ListConvAdapter extends BaseAdapter{
     private List<Friend> mList;
@@ -25,6 +31,7 @@ public class ListConvAdapter extends BaseAdapter{
         this.context = context;
     }
 
+    // ----------------------------------------------------
 
     public void add( Friend f ){
         mList.add( f );
@@ -40,6 +47,7 @@ public class ListConvAdapter extends BaseAdapter{
         }
     }
 
+    // ----------------------------------------------------
 
     @Override
     public int getCount(){
@@ -58,6 +66,7 @@ public class ListConvAdapter extends BaseAdapter{
         return position;
     }
 
+    // ----------------------------------------------------
 
     @Override
     public View getView( int position, View convertView, ViewGroup parent ){

@@ -10,6 +10,18 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
+/**
+ * The service in charge of dealing with GCM message.
+ * Will determine if the message should be treated
+ * and broadcast a message caught by all the registered
+ * GCMCallbacks.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
+ */
 public class GcmIntentService extends IntentService{
 
 
