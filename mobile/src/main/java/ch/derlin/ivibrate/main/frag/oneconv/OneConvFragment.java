@@ -4,19 +4,17 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.*;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.TextView;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.Message;
-import com.google.gson.reflect.TypeToken;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,7 +31,7 @@ import java.util.List;
  *
  * @author Lucy Linder
  */
-public class OneConvFragment extends Fragment implements AbsListView.OnItemClickListener{
+public class OneConvFragment extends Fragment{
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_FRIEND = "param1";
@@ -125,11 +123,15 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
         mListView.setAdapter( mAdapter );
 
         // Set OnItemClickListener so we can be notified on item clicks
-        mListView.setOnItemClickListener( this );
+//        mListView.setOnItemClickListener( this );
 
         // remove logo but show the arrow back
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayUseLogoEnabled( false );
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        ActionBar actionBar = ( ( ActionBarActivity ) getActivity() ).getSupportActionBar();
+
+        if(actionBar != null){
+            actionBar.setDisplayUseLogoEnabled( false );
+            actionBar.setDisplayHomeAsUpEnabled( true );
+        }
 
         return view;
     }
@@ -191,29 +193,15 @@ public class OneConvFragment extends Fragment implements AbsListView.OnItemClick
     // ----------------------------------------------------
 
 
-    @Override
-    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
-        if( null != mListener ){
-            Message m = ( Message ) mAdapter.getItem( position );
-            mListener.onReplayPattern( ( long[] ) //
-                    App.getGson().fromJson( m.getPattern(),  //
-                            new TypeToken<long[]>(){}.getType() ) );
-        }
-    }
-
-
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.
-     */
-    public void setEmptyText( CharSequence emptyText ){
-        View emptyView = mListView.getEmptyView();
-
-        if( emptyView instanceof TextView ){
-            ( ( TextView ) emptyView ).setText( emptyText );
-        }
-    }
+//    @Override
+//    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
+//        if( null != mListener ){
+//            Message m = ( Message ) mAdapter.getItem( position );
+//            mListener.onReplayPattern( ( long[] ) //
+//                    App.getGson().fromJson( m.getPattern(),  //
+//                            new TypeToken<long[]>(){}.getType() ) );
+//        }
+//    }
 
 
     @Override
