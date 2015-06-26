@@ -2,10 +2,8 @@ package ch.derlin.ivibrate.main;
 
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -15,26 +13,26 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
-import ch.derlin.ivibrate.pattern.PatternActivity;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
+import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmConstants;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.frag.listconv.ListConversationsFragment;
 import ch.derlin.ivibrate.main.frag.oneconv.OneConvFragment;
+import ch.derlin.ivibrate.pattern.PatternActivity;
+import ch.derlin.ivibrate.sql.LocalContactsManager;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 import ch.derlin.ivibrate.sql.entities.Message;
-import ch.derlin.ivibrate.sql.LocalContactsManager;
 import ch.derlin.ivibrate.wear.SendToWearableService;
 import ch.derlin.ivibrate.wear.WearableCallbacks;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static ch.derlin.ivibrate.sql.LocalContactsManager.getAvailableContacts;
 
@@ -271,21 +269,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     private void loadFriends(){
-        final Context context = MainActivity.this;
-        new AsyncTask<Void, Void, Map<String, Friend>>(){
-
-            @Override
-            protected Map<String, Friend> doInBackground( Void... params ){
-
-                try( SqlDataSource src = new SqlDataSource( context, true ) ){
-                    return src.getFriends();
-                }catch( SQLException e ){
-                    Log.d( context.getPackageName(), "Error retrieving data: " + e );
-                }
-
-                return new TreeMap<>();
-            }
-
+        new AppUtils.LoadFriendAsyncTask(this){
 
             @Override
             protected void onPostExecute( Map<String, Friend> friends ){

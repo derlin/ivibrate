@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -13,6 +14,7 @@ import android.view.*;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import ch.derlin.ivibrate.R;
+import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
@@ -85,21 +87,44 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
     @Override
     public View onCreateView( LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState ){
         View view = inflater.inflate( R.layout.fragment_main_listconv, container, false );
-
-        mFriends = mListener.getFriends();
         mList = ( ListView ) view.findViewById( R.id.listView );
-        mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( mFriends.values() ) );
-        mList.setAdapter( mAdapter );
         mList.setOnItemClickListener( this );
         mList.setOnItemLongClickListener( this );
         setHasOptionsMenu( true );
 
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayUseLogoEnabled( true );
-        ( ( ActionBarActivity ) getActivity() ).getSupportActionBar().setDisplayHomeAsUpEnabled( false );
+        ActionBar toolbar = ( ( ActionBarActivity ) getActivity() ).getSupportActionBar();
+        if( toolbar != null ){
+            toolbar.setDisplayUseLogoEnabled( true );
+            toolbar.setDisplayHomeAsUpEnabled( false );
+        }
 
         getActivity().setTitle( "Conversations" );
 
+        mFriends = mListener.getFriends();
+
+        if( mFriends == null ){
+            // in case the activity was idle for a while
+            new AppUtils.LoadFriendAsyncTask( getActivity() ){
+
+                @Override
+                protected void onPostExecute( Map<String, Friend> friends ){
+                    mFriends = friends;
+                    onFriendsLoaded();
+                }
+            }.execute();
+
+        }else{
+            onFriendsLoaded();
+        }
+
+
         return view;
+    }
+
+
+    private void onFriendsLoaded(){
+        mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( mFriends.values() ) );
+        mList.setAdapter( mAdapter );
     }
 
 
