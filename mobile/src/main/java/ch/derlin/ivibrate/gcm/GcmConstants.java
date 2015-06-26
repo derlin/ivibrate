@@ -29,6 +29,7 @@ public class GcmConstants{
     public static final String MESSAGE_KEY = "message";  // the text message
     public static final String PATTERN_KEY = "pattern";  // the pattern message
     public static final String MESSAGE_ID_KEY = "my_message_id"; // to associate the message and its ack
+    public static final String ERROR_KEY = "error";
 
     public static final String ACTION_KEY = "action"; // key to the "action" field (messsage, ack, etc)
 
@@ -40,6 +41,7 @@ public class GcmConstants{
     public static final String ACTION_MESSAGE_SENT = "MESSAGE_SENT";
     public static final String ACTION_GET_ACCOUNTS = PACKAGE + ".GET_ACCOUNTS";
     public static final String ACTION_ACK = PACKAGE + "_ack";
+    public static final String ACTION_NACK = PACKAGE + "_nack";
 
     /** the same as the action key (mainly used on server side **/
     public static final String MESG_TYPE_KEY = "message_type";

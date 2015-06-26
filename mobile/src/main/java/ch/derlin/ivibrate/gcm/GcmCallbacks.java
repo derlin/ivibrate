@@ -4,8 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
+import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.sql.entities.Message;
@@ -15,7 +18,7 @@ import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 /**
  * This class is meant to be overriden to ease the process of
  * responding to GCM events.
- *
+ * <p/>
  * Each broadcasted event by the GCM service has a
  * method associated.
  * -------------------------------------------------  <br />
@@ -74,6 +77,24 @@ public class GcmCallbacks extends BroadcastReceiver{
 
         switch( intent.getStringExtra( EXTRA_EVT_TYPE ) ){
 
+            case ACTION_NACK:
+                String error = intent.getStringExtra( ERROR_KEY);
+
+                if(TO_KEY.equals( error )){
+                    // the friend's regids are not up to date...
+                    onNackReceived();
+
+                }else if(FROM_KEY.equals( error )){
+                    // error: the registration was unsuccessful. Try again
+                    String phone = PreferenceManager.getDefaultSharedPreferences( context ) //
+                            .getString( context.getString( R.string.pref_phone ), null );
+
+                    if( phone != null ) GcmSenderService.getInstance().registerToServer( phone );
+                    Toast.makeText(App.getAppContext(), "registration failed. Trying again...", Toast.LENGTH_SHORT).show();
+                }
+
+                break;
+
             case ACTION_ACK:
                 try{
                     Long mesgId = Long.parseLong( intent.getStringExtra( MESSAGE_ID_KEY ) );
@@ -106,7 +127,7 @@ public class GcmCallbacks extends BroadcastReceiver{
                 String to = intent.getStringExtra( TO_KEY );
                 long[] p = AppUtils.getPatternFromString( intent.getStringExtra( PATTERN_KEY ) );
                 String t = intent.getStringExtra( MESSAGE_KEY );
-                Long id = Long.parseLong(intent.getStringExtra( MESSAGE_ID_KEY ));
+                Long id = Long.parseLong( intent.getStringExtra( MESSAGE_ID_KEY ) );
                 if( to != null && p != null ){
                     Message m = Message.createSentInstance( to, p, t );
                     m.setId( id );

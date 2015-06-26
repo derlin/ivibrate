@@ -10,6 +10,8 @@ import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import ch.derlin.ivibrate.sql.entities.LocalContactDetails;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,6 +35,7 @@ public class ListConvAdapter extends BaseAdapter{
 
     // ----------------------------------------------------
 
+
     public void add( Friend f ){
         mList.add( f );
         notifyDataSetChanged();
@@ -47,7 +50,22 @@ public class ListConvAdapter extends BaseAdapter{
         }
     }
 
+
+
+    public void setFriends( Collection<Friend> friends ){
+        if( mList == null ){
+            mList = new ArrayList<>();
+
+        }else{
+            mList.clear();
+        }
+
+        this.mList.addAll( friends );
+        notifyDataSetChanged();
+    }
+
     // ----------------------------------------------------
+
 
     @Override
     public int getCount(){
@@ -67,6 +85,7 @@ public class ListConvAdapter extends BaseAdapter{
     }
 
     // ----------------------------------------------------
+
 
     @Override
     public View getView( int position, View convertView, ViewGroup parent ){
@@ -98,6 +117,7 @@ public class ListConvAdapter extends BaseAdapter{
 
         return convertView;
     }
+
 
 
     // ----------------------------------------------------

@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.*;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.Toast;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.sql.SqlDataSource;
@@ -42,6 +43,7 @@ public class OneConvFragment extends Fragment{
     private OneConvAdapter mAdapter;
 
     private GcmCallbacks mCallbacks = new GcmCallbacks(){
+
         @Override
         public void onMessageReceived( String from, Message message ){
             if( mFriend.getPhone().equals( from ) ){
@@ -68,6 +70,14 @@ public class OneConvFragment extends Fragment{
                 mAdapter.setAcked( messageId );
             }
         }
+
+
+        @Override
+        public void onNackReceived(){
+            // the friend's regid is not up to date...
+            Toast.makeText( getActivity(), "Error: your friend is not registered...", Toast.LENGTH_SHORT ).show();
+        }
+
     };
     // ----------------------------------------------------
 
@@ -123,12 +133,12 @@ public class OneConvFragment extends Fragment{
         mListView.setAdapter( mAdapter );
 
         // Set OnItemClickListener so we can be notified on item clicks
-//        mListView.setOnItemClickListener( this );
+        //        mListView.setOnItemClickListener( this );
 
         // remove logo but show the arrow back
         ActionBar actionBar = ( ( ActionBarActivity ) getActivity() ).getSupportActionBar();
 
-        if(actionBar != null){
+        if( actionBar != null ){
             actionBar.setDisplayUseLogoEnabled( false );
             actionBar.setDisplayHomeAsUpEnabled( true );
         }
@@ -193,15 +203,15 @@ public class OneConvFragment extends Fragment{
     // ----------------------------------------------------
 
 
-//    @Override
-//    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
-//        if( null != mListener ){
-//            Message m = ( Message ) mAdapter.getItem( position );
-//            mListener.onReplayPattern( ( long[] ) //
-//                    App.getGson().fromJson( m.getPattern(),  //
-//                            new TypeToken<long[]>(){}.getType() ) );
-//        }
-//    }
+    //    @Override
+    //    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
+    //        if( null != mListener ){
+    //            Message m = ( Message ) mAdapter.getItem( position );
+    //            mListener.onReplayPattern( ( long[] ) //
+    //                    App.getGson().fromJson( m.getPattern(),  //
+    //                            new TypeToken<long[]>(){}.getType() ) );
+    //        }
+    //    }
 
 
     @Override

@@ -75,6 +75,16 @@ public class SqlDataSource implements AutoCloseable{
     }
 
 
+    public Friend getFriend( String phone ){
+        Cursor cursor = db.query( F_TABLE_NAME, null, P_COL_PHONE + "= ?", new String[]{ phone }, null, null, null );
+        cursor.moveToFirst();
+        Friend f = null;
+        if( !cursor.isAfterLast() ) f = cursorToFriend( cursor );
+        cursor.close();
+        return f;
+    }
+
+
     public Map<String, Friend> getFriends(){
         Map<String, Friend> map = new TreeMap<>();
 
@@ -208,5 +218,6 @@ public class SqlDataSource implements AutoCloseable{
         m.setIsAcked( cursor.getInt( cursor.getColumnIndex( P_COL_IS_ACKED ) ) > 0 );
         return m;
     }
+
 
 }

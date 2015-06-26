@@ -61,8 +61,6 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
         void onAddConversation();
 
         void onConversationSelected( Friend friend );
-
-        Map<String, Friend> getFriends();
     }
 
     // ----------------------------------------------------
@@ -100,31 +98,22 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
 
         getActivity().setTitle( "Conversations" );
 
-        mFriends = mListener.getFriends();
-
-        if( mFriends == null ){
-            // in case the activity was idle for a while
-            new AppUtils.LoadFriendAsyncTask( getActivity() ){
-
-                @Override
-                protected void onPostExecute( Map<String, Friend> friends ){
-                    mFriends = friends;
-                    onFriendsLoaded();
-                }
-            }.execute();
-
-        }else{
-            onFriendsLoaded();
-        }
-
+        loadFriendAsync();
 
         return view;
     }
 
 
-    private void onFriendsLoaded(){
-        mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( mFriends.values() ) );
-        mList.setAdapter( mAdapter );
+    private void loadFriendAsync(){
+        new AppUtils.LoadFriendAsyncTask( getActivity() ){
+
+            @Override
+            protected void onPostExecute( Map<String, Friend> friends ){
+                mFriends = friends;
+                mAdapter = new ListConvAdapter( getActivity(), new ArrayList<>( mFriends.values() ) );
+                mList.setAdapter( mAdapter );
+            }
+        }.execute();
     }
 
 
@@ -186,5 +175,14 @@ public class ListConversationsFragment extends Fragment implements AdapterView.O
         } ).setNegativeButton( "No", null ).show();
         return true;
     }
+
+    // ----------------------------------------------------
+
+
+    public void notifyNewFriend( Friend f ){
+        mFriends.put( f.getPhone(), f );
+        if( mAdapter != null ) mAdapter.add( f );
+    }
+
 
 }

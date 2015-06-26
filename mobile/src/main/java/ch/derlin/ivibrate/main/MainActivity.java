@@ -15,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
-import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.gcm.GcmCallbacks;
 import ch.derlin.ivibrate.gcm.GcmConstants;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
@@ -32,7 +31,6 @@ import ch.derlin.ivibrate.wear.WearableCallbacks;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import static ch.derlin.ivibrate.sql.LocalContactsManager.getAvailableContacts;
 
@@ -54,7 +52,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
     private OneConvFragment mOneConvFragment;
 
     private List<LocalContactDetails> mAvailableContacts;
-    private Map<String, Friend> mFriends;
 
     private boolean mNewConvPending = false;
 
@@ -73,7 +70,17 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         getSupportActionBar().setDisplayUseLogoEnabled( true );
         getSupportActionBar().setLogo( R.mipmap.ic_launcher );
         setTitle( "IVibrate" );
-        loadFriends();
+
+        Friend f = getFriendExtra();
+        if( f != null ){
+            onConversationSelected( f );
+        }else{
+            // first load, launch the conversation fragment
+            if( mListConvFragment == null ){
+                mListConvFragment = ListConversationsFragment.newInstance();
+            }
+            setFragment( mListConvFragment );
+        }
 
     }
 
@@ -210,12 +217,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
-    public Map<String, Friend> getFriends(){
-        return mFriends;
-    }
-
-
-    @Override
     public void onAddConversation(){
         if( mAvailableContacts == null ){
             mNewConvPending = true;
@@ -268,40 +269,16 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
      * ****************************************************************/
 
 
-    private void loadFriends(){
-        new AppUtils.LoadFriendAsyncTask(this){
-
-            @Override
-            protected void onPostExecute( Map<String, Friend> friends ){
-                mFriends = friends;
-                onFriendsLoaded();
-            }
-        }.execute();
-    }
-
-
-    private void onFriendsLoaded(){
-
-        Friend f = getFriendExtra();
-        if( f != null ){
-            onConversationSelected( f );
-        }else{
-            // first load, launch the conversation fragment
-            if( mListConvFragment == null ){
-                mListConvFragment = ListConversationsFragment.newInstance();
-            }
-            setFragment( mListConvFragment );
-        }
-    }
-
-
     private Friend getFriendExtra(){
         Bundle extras = getIntent().getExtras();
         // if a notification was pressed, show the contact
         if( extras != null && extras.containsKey( GcmConstants.NOTIFICATION_KEY ) ){
             String from = extras.getString( GcmConstants.FROM_KEY );
-            if( mFriends != null && mFriends.containsKey( from ) ){
-                return mFriends.get( from );
+            try( SqlDataSource src = new SqlDataSource( this, true ) ){
+                return src.getFriend( from );
+
+            }catch( SQLException e ){
+                Log.d( getPackageName(), "Error retrieving friend " + from );
             }
         }
 
@@ -332,33 +309,24 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
                     @Override
                     public void onClick( DialogInterface dialog, int which ){
                         String strName = arrayAdapter.getItem( which );
-
                         LocalContactDetails details = mAvailableContacts.get( which );
-
                         dialog.dismiss();
 
                         if( details.getName().equals( strName ) ){
-                            String phone = details.getPhone();
 
-                            if( mFriends.containsKey( phone ) ){
-                                // friend already exists,
-                                onConversationSelected( mFriends.get( phone ) );
-                                return;
-
-                            }
+                            Friend f = new Friend();
+                            f.setPhone( details.getPhone() );
+                            f.setDetails( details );
 
                             try( SqlDataSource src = new SqlDataSource( MainActivity.this, true ) ){
                                 // add the new friend and launch the conversation view
-                                Friend f = new Friend();
-                                f.setPhone( details.getPhone() );
-                                f.setDetails( details );
                                 src.addFriend( f );
-                                mFriends.put( phone, f );
-                                //                                mListConvFragment.notifyNewFriend( f );
-                                onConversationSelected( f );
+
                             }catch( SQLException e ){
-                                Log.d( getPackageName(), "Error adding friend " + e );
+                                // the friend already existed
+                                Log.d( getPackageName(), "Error adding friend. Already exists ? " );
                             }
+                            onConversationSelected( f );
                         }
                     }
                 }
