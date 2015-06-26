@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.comm;
 
 /**
  * Created by lucy on 24/06/15.

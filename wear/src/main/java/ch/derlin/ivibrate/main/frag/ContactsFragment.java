@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.main.Friend;
+import ch.derlin.ivibrate.utils.Friend;
 
 import java.util.ArrayList;
 import java.util.List;

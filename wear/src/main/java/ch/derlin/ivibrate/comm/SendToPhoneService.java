@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.comm;
 
 import android.app.IntentService;
 import android.app.Service;
@@ -7,8 +7,8 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.wearable.activity.ConfirmationActivity;
 import android.util.Log;
-import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -16,7 +16,7 @@ import com.google.android.gms.wearable.*;
 
 import java.util.Date;
 
-import static ch.derlin.ivibrate.WearableConstants.WEARABLE_TO_PHONE_DATA_PATH;
+import static ch.derlin.ivibrate.comm.WearableConstants.WEARABLE_TO_PHONE_DATA_PATH;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -125,13 +125,25 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
             @Override
             protected void onPostExecute( com.google.android.gms.common.api.Status status ){
                 if( toast != null ){
-                    Toast.makeText( getApplicationContext(), toast + ": "  //
-                                    + ( status.isSuccess() ? "success" : "error" ),//
-                            Toast.LENGTH_SHORT ).show();
+                    showAnimation( status.isSuccess(), status.isSuccess() ? "Message sent." : "Error sending " +
+                            "message..." );
+                    //                    Toast.makeText( getApplicationContext(), toast + ": "  //
+                    //                                    + ( status.isSuccess() ? "success" : "error" ),//
+                    //                            Toast.LENGTH_SHORT ).show();
                 }
                 Log.i( getPackageName(), "Data sent to phone. Status => " + status );
             }
         }.execute();
+    }
+
+
+    private void showAnimation( boolean success, String message ){
+        Intent intent = new Intent( this, ConfirmationActivity.class );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        intent.putExtra( ConfirmationActivity.EXTRA_ANIMATION_TYPE, success ? ConfirmationActivity.SUCCESS_ANIMATION
+                : ConfirmationActivity.FAILURE_ANIMATION );
+        intent.putExtra( ConfirmationActivity.EXTRA_MESSAGE, message );
+        startActivity( intent );
     }
 
 

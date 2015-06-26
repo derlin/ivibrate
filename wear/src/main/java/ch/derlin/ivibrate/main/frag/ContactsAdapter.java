@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.main.Friend;
+import ch.derlin.ivibrate.utils.Friend;
 
 import java.util.List;
 

@@ -13,9 +13,9 @@
         android:src="@drawable/wl_circle"/>
     <TextView
         android:id="@+id/name"
-        android:gravity="center_vertical|left"
+        android:gravity="center_vertical|start"
         android:layout_width="wrap_content"
-        android:layout_marginRight="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_height="match_parent"
         android:fontFamily="sans-serif-condensed-light"
         android:lineSpacingExtra="-4sp"

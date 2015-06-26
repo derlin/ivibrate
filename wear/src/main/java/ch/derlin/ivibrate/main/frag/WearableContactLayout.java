@@ -36,8 +36,8 @@ public class WearableContactLayout extends LinearLayout implements WearableListV
         super( context, attrs, defStyle );
 
         mFadedTextAlpha = 40 / 100f;
-        mFadedCircleColor = getResources().getColor( R.color.grey );
-        mChosenCircleColor = getResources().getColor( R.color.blue );
+        mFadedCircleColor = getResources().getColor( R.color.white );
+        mChosenCircleColor = getResources().getColor( R.color.my_red );
     }
 
 

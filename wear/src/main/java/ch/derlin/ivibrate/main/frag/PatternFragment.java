@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import ch.derlin.ivibrate.R;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import java.util.List;
 public class PatternFragment extends Fragment implements View.OnTouchListener, View.OnClickListener{
 
     private ImageButton mCancelButton, mNextButton;
-    private View mView;
+    private ImageView mImageView;
     private List<Long> pattern = new ArrayList<>();
     private long lastTouch;
     private PatternFragmentCallbacks mCallbacks;
@@ -48,9 +49,9 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
         View view = inflater.inflate( R.layout.fragment_main_pattern, container, false );
         mCancelButton = ( ImageButton ) view.findViewById( R.id.cancelButton );
         mNextButton = ( ImageButton ) view.findViewById( R.id.okButton );
-        mView = view.findViewById( R.id.patternView );
+        mImageView = ( ImageView ) view.findViewById( R.id.patternView );
 
-        mView.setOnTouchListener( this );
+        mImageView.setOnTouchListener( this );
         mCancelButton.setOnClickListener( this );
         mNextButton.setOnClickListener( this );
 
@@ -64,11 +65,13 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
 
         switch( event.getAction() ){
             case MotionEvent.ACTION_DOWN:
-                setPatternBg( android.R.color.holo_orange_light );
+                setPatternBg( R.drawable.pattern_orange );//R.drawable.orange_circle);// android.R.color
+                // .holo_orange_light );
                 addPattern();
                 break;
             case MotionEvent.ACTION_UP:
-                setPatternBg( R.color.myTextPrimaryColor );
+                setPatternBg( R.drawable.pattern_white );//R.drawable.red_circle );//R.color
+                // .myTextPrimaryColor );
                 addPattern();
                 break;
             default:
@@ -79,8 +82,8 @@ public class PatternFragment extends Fragment implements View.OnTouchListener, V
     }
 
 
-    private void setPatternBg( int colorId ){
-        mView.setBackgroundColor( getResources().getColor( colorId ) );
+    private void setPatternBg( int resId ){
+        mImageView.setImageResource( resId );
     }
 
 

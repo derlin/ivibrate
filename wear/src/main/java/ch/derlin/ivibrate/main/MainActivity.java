@@ -9,10 +9,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.speech.RecognizerIntent;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.wearable.view.WatchViewStub;
 import android.widget.Toast;
 import ch.derlin.ivibrate.R;
-import ch.derlin.ivibrate.SendToPhoneService;
+import ch.derlin.ivibrate.comm.ListenerService;
+import ch.derlin.ivibrate.comm.SendToPhoneService;
 import ch.derlin.ivibrate.main.frag.ContactsFragment;
 import ch.derlin.ivibrate.main.frag.PatternFragment;
 import ch.derlin.ivibrate.main.frag.TextFragment;
@@ -24,10 +26,11 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         TextFragment.TextFragmentCallbacks, //
         ContactsFragment.ContactsFragmentCallbacks{
 
-    long[] pattern;
-    String text;
-    String phone;
+    private long[] pattern;
+    private String text;
+    private String phone;
 
+    private WatchViewStub mStub;
 
     // ----------------------------------------------------
 
@@ -43,13 +46,13 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
 
         }
     };
-    private WatchViewStub mStub;
 
     // ----------------------------------------------------
 
 
     @Override
     protected void onDestroy(){
+        ListenerService.isWaitingForContact( false );
         unbindService( mConnection );
         super.onDestroy();
     }
@@ -72,7 +75,6 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
             Toast.makeText( this, "Message sent.", Toast.LENGTH_SHORT ).show();
             finish();
         }
-
     }
 
     // ----------------------------------------------------
@@ -85,9 +87,11 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         if( extras == null ){
             SendToPhoneService.getInstance().askForContacts();
             f = WaitFragment.getInstance( "Retrieving contact's list..." );
+            ListenerService.isWaitingForContact( true );
 
         }else if( extras.containsKey( "phone" ) ){
-            phone = extras.getString( phone );
+            phone = extras.getString( "phone" );
+            NotificationManagerCompat.from( getApplicationContext() ).cancel( Integer.parseInt( phone ) );
             f = new PatternFragment();
 
         }else if( extras.containsKey( "contacts" ) ){
@@ -99,7 +103,7 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
             return;
         }
 
-        if(mStub == null){
+        if( mStub == null ){
             // inflate only if necessary
             setContentView( R.layout.activity_main_stub );
             mStub = ( WatchViewStub ) findViewById( R.id.watch_view_stub );
@@ -122,10 +126,11 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
 
 
     private void send(){
-//        setFrag( WaitFragment.getInstance( "Sending..." ) );
         SendToPhoneService.getInstance().send( phone, pattern, text );
         finish();
     }
+
+
     /* *****************************************************************
      * fragments callback
      * ****************************************************************/
@@ -134,7 +139,6 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
     @Override
     public void onPatternValidated( long[] pattern ){
         this.pattern = pattern;
-        Toast.makeText( this, "Yeah, pattern validated!", Toast.LENGTH_SHORT ).show();
         setFrag( new TextFragment() );
     }
 
@@ -175,6 +179,7 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         this.phone = phone;
         setFrag( new PatternFragment() );
     }
+
 
     /* *****************************************************************
      * speech result

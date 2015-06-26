@@ -8,33 +8,37 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="5dp"
-        app:layout_box="all">
+        android:padding="14dp"
+        app:layout_box="all"
+        android:background="@color/box_bg_color">
 
         <ImageButton
             android:id="@+id/cancelButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="bottom|left"
+            android:scaleType="fitXY"
             android:background="@null"
-            android:src="@android:drawable/ic_delete" />
+            android:src="@drawable/cancel" />
 
         <ImageButton
             android:id="@+id/okButton"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="fitXY"
             android:layout_gravity="bottom|right"
             android:background="@null"
-            android:src="@android:drawable/sym_action_chat" />
+            android:src="@drawable/ok" />
 
         <ImageButton
             android:id="@+id/speechButton"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@android:color/holo_orange_light"
-            android:src="@android:drawable/ic_btn_speak_now"
-            android:gravity="center"
-            android:layout_gravity="center_horizontal|top" />
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            android:scaleType="centerInside"
+            android:layout_gravity="center"
+            android:background="@null"
+            android:src="@drawable/speech" />
+
     </FrameLayout>
 
 </android.support.wearable.view.BoxInsetLayout>

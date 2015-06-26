@@ -1,8 +1,9 @@
-package ch.derlin.ivibrate;
+package ch.derlin.ivibrate.app;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import ch.derlin.ivibrate.comm.SendToPhoneService;
 
 /**
  * Created by lucy on 17/06/15.
@@ -25,6 +26,7 @@ public class App extends Application{
         this.startService( new Intent( this, SendToPhoneService.class ) );
 
     }
+
 
 
     @Override

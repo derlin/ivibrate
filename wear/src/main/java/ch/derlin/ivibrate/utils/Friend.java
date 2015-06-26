@@ -1,4 +1,4 @@
-package ch.derlin.ivibrate.main;
+package ch.derlin.ivibrate.utils;
 
 import com.google.android.gms.wearable.DataMap;
 
