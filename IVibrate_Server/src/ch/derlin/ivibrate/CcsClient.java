@@ -493,8 +493,6 @@ public class CcsClient{
 
 
     public static void main( String[] args ){
-        final String toRegId = "APA91bG_Cl2F4sjlSoXSLonXRpucB0cVIgAs2WNNqjPqG7x8AIivi_JwQXLL21hvMDdhzm_j" +
-                "-gXeOgU3wSYaII8RiKIqxjgf3qwaULFqI_puq1huEaxlczwiYTX4Q33ZDghkzf6MIkQH7RbNDRRwJD3kYpyXpreDwg"; //args[0];
 
         CcsClient ccsClient = CcsClient.prepareClient( PROJECT_ID, SERVER_API_KEY, true );
 
@@ -504,17 +502,5 @@ public class CcsClient{
             e.printStackTrace();
         }
 
-        // Send a sample hello downstream message to a device.
-        String messageId = ccsClient.getRandomMessageId();
-        Map<String, String> payload = new HashMap<String, String>();
-        payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
-        payload.put( MESSAGE_KEY, "Simple sample sessage" );
-        payload.put( FROM_KEY, "prout lala" );
-
-        String collapseKey = "sample";
-        Long timeToLive = 10000L;
-        Boolean delayWhileIdle = true;
-
-        ccsClient.send( createJsonMessage( toRegId, messageId, payload, collapseKey, timeToLive, delayWhileIdle ) );
     }
 }

@@ -10,7 +10,8 @@ lint.xml
 .checkstyle
 
 #IntelliJ IDEA
-.idea
+.idea/
+*.idea
 *.iml
 *.ipr
 *.iws
@@ -45,3 +46,4 @@ proguard-project.txt
 tmp
 *.tgz
 /dist/
+*.sql

@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:///data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/IVibrate.iml" filepath="/data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/IVibrate.iml" />
-      <module fileurl="file:///data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/mobile/mobile.iml" filepath="/data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/mobile/mobile.iml" />
-      <module fileurl="file:///data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/wear/wear.iml" filepath="/data/Dropbox/_EIA/Année 3.2/Advanced-interfaces/IVibrate/wear/wear.iml" />
+      <module fileurl="file://$PROJECT_DIR$/IVibrate_Client.iml" filepath="$PROJECT_DIR$/IVibrate_Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobile/mobile.iml" filepath="$PROJECT_DIR$/mobile/mobile.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wear/wear.iml" filepath="$PROJECT_DIR$/wear/wear.iml" />
     </modules>
   </component>
 </project>
