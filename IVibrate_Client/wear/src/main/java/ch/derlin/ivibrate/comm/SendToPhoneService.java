@@ -1,6 +1,5 @@
 package ch.derlin.ivibrate.comm;
 
-import android.app.IntentService;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -19,16 +18,20 @@ import java.util.Date;
 import static ch.derlin.ivibrate.comm.WearableConstants.WEARABLE_TO_PHONE_DATA_PATH;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p/>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
+ * A singleton service to send data to the handheld device
+ * through the data layer.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class SendToPhoneService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient
         .OnConnectionFailedListener{
 
     private static SendToPhoneService INSTANCE;
+    private GoogleApiClient mGoogleClient = null;
 
     // ----------------------------------------------------
 
@@ -41,9 +44,15 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
 
     private final IBinder mBinder = new SendToWearableBinder();
 
+
+
+    @Override
+    public IBinder onBind( Intent intent ){
+        return mBinder;
+    }
+
     // ----------------------------------------------------
 
-    private GoogleApiClient mGoogleClient = null;
 
 
     public static SendToPhoneService getInstance(){
@@ -69,16 +78,40 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
         super.onDestroy();
     }
 
+    // ----------------------------------------------------
 
-    @Override
-    public IBinder onBind( Intent intent ){
-        return mBinder;
+
+    /**
+     * Get the Google API client.
+     * @return  the google API client.
+     */
+    public GoogleApiClient getGoogleClient(){
+
+        if( mGoogleClient == null ){
+            mGoogleClient = new GoogleApiClient.Builder( this ) //
+                    .addApi( Wearable.API )  //
+                    .addConnectionCallbacks( this ) //
+                    .addOnConnectionFailedListener( this ) //
+                    .build();
+            mGoogleClient.connect();
+        }
+        return mGoogleClient;
     }
 
 
     /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
+     * Check if the google API client is connected.
+     * @return true or false.
+     */
+    public boolean isConnected(){
+        return mGoogleClient.isConnected();
+    }
+
+
+    /**
+     * Send a confirmation to the phone, for example
+     * to notify a pattern was successfully played.
+     * @param success  the status.
      */
     public void sendStatus( boolean success ){
         DataMap dataMap = new DataMap();
@@ -87,6 +120,10 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
     }
 
 
+    /**
+     * Ask the phone to send the list of existing
+     * contacts.
+     */
     public void askForContacts(){
         DataMap dataMap = new DataMap();
         dataMap.putString( "action", "getContacts" );
@@ -94,6 +131,12 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
     }
 
 
+    /**
+     * Ask the phone to send a message.
+     * @param phone the target receiver.
+     * @param pattern  the pattern.
+     * @param text an optional text.
+     */
     public void send( String phone, long[] pattern, String text ){
         DataMap dataMap = new DataMap();
         dataMap.putString( "action", "send" );
@@ -104,7 +147,13 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
 
     }
 
-    public void askOpenApp(String phone){
+
+    /**
+     * Ask the phone to open the app.
+     * @param phone an optional phone to show a
+     *              given conversation.
+     */
+    public void askOpenApp( String phone ){
         DataMap dataMap = new DataMap();
         dataMap.putString( "action", "open" );
         dataMap.putString( "phone", phone );
@@ -112,6 +161,13 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
     }
 
 
+    /* Send data to all connected nodes. */
+    private void broadcastDatamapToPhoneNodes( final DataMap dataMap ){
+        broadcastDatamapToPhoneNodes( dataMap, null );
+    }
+
+    /* Send data to all connected nodes.
+     * If toast is not null, an animation will be played upon success. */
     private void broadcastDatamapToPhoneNodes( final DataMap dataMap, final String toast ){
         dataMap.putLong( "time", new Date().getTime() );
         // we need a thread to avoid exceptions calling await
@@ -132,7 +188,8 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
             @Override
             protected void onPostExecute( com.google.android.gms.common.api.Status status ){
                 if( toast != null ){
-                    showAnimation( status.isSuccess(), status.isSuccess() ? "Message sent." : "Error sending " + "message..." );
+                    showAnimation( status.isSuccess(), status.isSuccess() ? "Message sent." : "Error sending " +
+                            "message..." );
 
                 }
                 Log.i( getPackageName(), "Data sent to phone. Status => " + status );
@@ -140,7 +197,7 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
         }.execute();
     }
 
-
+    /* Show a success or fail animation */
     private void showAnimation( boolean success, String message ){
         Intent intent = new Intent( this, ConfirmationActivity.class );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
@@ -151,31 +208,9 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
     }
 
 
-    private void broadcastDatamapToPhoneNodes( final DataMap dataMap ){
-        broadcastDatamapToPhoneNodes( dataMap, null );
-    }
-
-
-    public GoogleApiClient getGoogleClient(){
-
-        if( mGoogleClient == null ){
-            mGoogleClient = new GoogleApiClient.Builder( this ) //
-                    .addApi( Wearable.API )  //
-                    .addConnectionCallbacks( this ) //
-                    .addOnConnectionFailedListener( this ) //
-                    .build();
-            mGoogleClient.connect();
-        }
-        return mGoogleClient;
-    }
-
-
-    public boolean isConnected(){
-        return mGoogleClient.isConnected();
-    }
-
 
     // ----------------------------------------------------
+
     @Override
     public void onConnected( Bundle connectionHint ){
         Log.d( getPackageName(), "connected" );

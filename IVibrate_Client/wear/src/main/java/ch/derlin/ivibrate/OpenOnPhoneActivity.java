@@ -6,6 +6,16 @@ import android.support.v4.app.NotificationManagerCompat;
 import ch.derlin.ivibrate.comm.SendToPhoneService;
 
 
+ /**
+  * Activity launched by the "open on phone" action of
+  * a notification. Send a request to the phone and quits.
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class OpenOnPhoneActivity extends Activity{
 
     @Override

@@ -1,28 +1,23 @@
 package ch.derlin.ivibrate.app;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import ch.derlin.ivibrate.comm.SendToPhoneService;
 
 /**
- * Created by lucy on 17/06/15.
+ * The application class, which starts the Service on app launch.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class App extends Application{
-
-    static Context appContext;
-
-    public static Context getAppContext(){
-        return appContext;
-    }
-
-    //-------------------------------------------------------------
 
     @Override
     public void onCreate(){
         super.onCreate();
-
-        appContext = this.getApplicationContext();
         this.startService( new Intent( this, SendToPhoneService.class ) );
 
     }

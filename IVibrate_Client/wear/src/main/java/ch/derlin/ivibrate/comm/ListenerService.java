@@ -19,19 +19,26 @@ import com.google.android.gms.wearable.*;
 import java.util.ArrayList;
 
 /**
- * Created by michaelHahn on 1/16/15.
- * Listener service or data events on the data layer
+ * Listener service to communicate with the handheld device.
+ * The communication is made through data events on the data layer.
+ * -------------------------------------------------  <br />
+ * context      Advanced Interface - IVibrate project <br />
+ * date         June 2015                             <br />
+ * -------------------------------------------------  <br />
+ *
+ * @author Lucy Linder
  */
 public class ListenerService extends WearableListenerService{
 
-    private static final int INDEX_IN_PATTERN_TO_REPEAT = -1; // -1: don't repeatr
+    private static final int INDEX_IN_PATTERN_TO_REPEAT = -1; // -1: don't repeat
+    // needed to avoid launching the activity if the user dismissed it while
+    // waiting for the list of contacts
     private static boolean mShouldMainActivityBeCalled;
 
 
     @Override
     public void onDataChanged( DataEventBuffer dataEvents ){
 
-        Log.d( "wearable", "listener called" );
         DataMap dataMap;
 
         for( DataEvent event : dataEvents ){
@@ -41,30 +48,22 @@ public class ListenerService extends WearableListenerService{
                 // Check the data path
                 dataMap = DataMapItem.fromDataItem( event.getDataItem() ).getDataMap();
                 String path = event.getDataItem().getUri().getPath();
-                if( path.equals( WearableConstants.PHONE_TO_WEARABLE_DATA_PATH ) ){
 
+                if( path.equals( WearableConstants.PHONE_TO_WEARABLE_DATA_PATH ) ){
+                    // this is for us
                     if( dataMap.containsKey( "pattern" ) ){
+                        // a pattern was sent (either received or replayed)
                         playPattern( dataMap.getLongArray( "pattern" ), //
                                 dataMap.getString( "phone" ),   //
                                 dataMap.getString( "name" )   //
                         );
 
                     }else if( dataMap.containsKey( "contacts" ) ){
-                        if( !mShouldMainActivityBeCalled ){
-                            return;
-                        }
-                        mShouldMainActivityBeCalled = false;
-                        ArrayList<DataMap> maps = dataMap.getDataMapArrayList( "contacts" );
-                        ArrayList<Friend> contacts = new ArrayList<>();
-                        for( DataMap map : maps ){
-                            contacts.add( new Friend( map ) );
-                        }//end for
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable( "contacts", contacts );
-                        Intent intent = new Intent( this, MainActivity.class );
-                        intent.putExtras( bundle );
-                        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );
-                        startActivity( intent );
+                        // a query of the list of contacts
+                        if( mShouldMainActivityBeCalled ){
+                            mShouldMainActivityBeCalled = false;
+                            handleContactsList( dataMap );
+                        } // else, main activity was dismissed by the user => do nothing
                     }
                 }
 
@@ -78,24 +77,50 @@ public class ListenerService extends WearableListenerService{
         }
     }
 
+    // ----------------------------------------------------
+
+
+    private void handleContactsList( DataMap dataMap ){
+
+        // construct the list of contacts
+        ArrayList<DataMap> maps = dataMap.getDataMapArrayList( "contacts" );
+        ArrayList<Friend> contacts = new ArrayList<>();
+        for( DataMap map : maps ){
+            contacts.add( new Friend( map ) );
+        }//end for
+
+        // pass the list to the main activity
+        Bundle bundle = new Bundle();
+        bundle.putSerializable( "contacts", contacts );
+        Intent intent = new Intent( this, MainActivity.class );
+        intent.putExtras( bundle );
+        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );
+        startActivity( intent );
+    }
+
 
     private void playPattern( long[] pattern, String phone, String name ){
         if( pattern == null ) return;
+
+        // play the pattern
         Vibrator vibrator = ( Vibrator ) getSystemService( VIBRATOR_SERVICE );
         vibrator.vibrate( pattern, INDEX_IN_PATTERN_TO_REPEAT );
         Log.d( "wearable", "pattern received and played" );
 
         SendToPhoneService.getInstance().sendStatus( true );
 
-        if( phone == null ) return;
+        if( phone == null ) return; // do nothing if it is a replay
+
+        // it was a new message: show a notification with reply and
+        // open on phone actions
 
         // Create the reply action
         Intent replyActionIntent = new Intent( this, MainActivity.class );
         replyActionIntent.putExtra( "phone", phone );
         PendingIntent replyActionPendingIntent = PendingIntent.getActivity( this, 0, replyActionIntent, PendingIntent
                 .FLAG_UPDATE_CURRENT );
-        NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder( R.drawable
-                .reply_action, "Reply", replyActionPendingIntent ).build();
+        NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder( R.drawable.reply_action,
+                "Reply", replyActionPendingIntent ).build();
 
         // Create the open on phone intent
         Intent openActionIntent = new Intent( this, OpenOnPhoneActivity.class );
@@ -122,10 +147,21 @@ public class ListenerService extends WearableListenerService{
                 .extend( wearableExtender )  //
                 .build();
 
+        // show the notification
         NotificationManagerCompat.from( getApplicationContext() ).notify( Integer.parseInt( phone ), notification );
     }
 
+    // ----------------------------------------------------
 
+
+    /**
+     * This method should be called with a parameter set to true when the main activity
+     * asks for contacts. If the latter is dismissed by the user, it should set the
+     * parameter to false before finishing. This way, we don't wake up the main activity
+     * after it has been stopped.
+     *
+     * @param b a boolean.
+     */
     public static void isWaitingForContact( boolean b ){
         mShouldMainActivityBeCalled = b;
     }

@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.wearable.view.WatchViewStub;
-import android.widget.Toast;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.comm.ListenerService;
 import ch.derlin.ivibrate.comm.SendToPhoneService;
@@ -22,6 +21,15 @@ import ch.derlin.ivibrate.main.frag.WaitFragment;
 
 import java.util.List;
 
+ /**
+  * The main activity to send a message.
+  * -------------------------------------------------  <br />
+  * context      Advanced Interface - IVibrate project <br />
+  * date         June 2015                             <br />
+  * -------------------------------------------------  <br />
+  *
+  * @author Lucy Linder
+  */
 public class MainActivity extends Activity implements PatternFragment.PatternFragmentCallbacks, //
         TextFragment.TextFragmentCallbacks, //
         ContactsFragment.ContactsFragmentCallbacks{
@@ -70,35 +78,38 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
     protected void onNewIntent( Intent intent ){
         super.onNewIntent( intent );
         if( intent.hasExtra( "contacts" ) ){
+            // we received the list of contacts !
+            // TODO: if no contacts ?
             setInterface( intent );
-        }else if( intent.hasExtra( "feedback" ) ){
-            Toast.makeText( this, "Message sent.", Toast.LENGTH_SHORT ).show();
-            finish();
         }
     }
 
     // ----------------------------------------------------
 
-
+    /* set the interface */
     private void setInterface( Intent intent ){
         Bundle extras = intent.getExtras();
 
         final Fragment f;
         if( extras == null ){
+            // no phone => ask for the contact's list and show a progressbar
             SendToPhoneService.getInstance().askForContacts();
             f = WaitFragment.getInstance( "Retrieving contact's list..." );
             ListenerService.isWaitingForContact( true );
 
         }else if( extras.containsKey( "phone" ) ){
+            // a reply: show the pattern fragment
             phone = extras.getString( "phone" );
             NotificationManagerCompat.from( getApplicationContext() ).cancel( Integer.parseInt( phone ) );
             f = new PatternFragment();
 
         }else if( extras.containsKey( "contacts" ) ){
+            // the list of contacts has been received: show it
             f = new ContactsFragment();
             f.setArguments( extras );
 
         }else{
+            // should never happen...
             finish();
             return;
         }
@@ -115,16 +126,18 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
             } );
 
         }else{
+            // simply show the right fragment
             setFrag( f );
         }
     }
 
-
+    /* show a fragment */
     private void setFrag( Fragment f ){
         getFragmentManager().beginTransaction().replace( R.id.fragment, f ).commit();
     }
 
-
+    /* ask the phone to send a new message and quit
+    * (a feedback animation will be played by the service itself) */
     private void send(){
         SendToPhoneService.getInstance().send( phone, pattern, text );
         finish();
