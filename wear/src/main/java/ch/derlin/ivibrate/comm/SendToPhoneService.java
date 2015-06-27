@@ -104,6 +104,13 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
 
     }
 
+    public void askOpenApp(String phone){
+        DataMap dataMap = new DataMap();
+        dataMap.putString( "action", "open" );
+        dataMap.putString( "phone", phone );
+        broadcastDatamapToPhoneNodes( dataMap );
+    }
+
 
     private void broadcastDatamapToPhoneNodes( final DataMap dataMap, final String toast ){
         dataMap.putLong( "time", new Date().getTime() );
@@ -125,11 +132,8 @@ public class SendToPhoneService extends Service implements GoogleApiClient.Conne
             @Override
             protected void onPostExecute( com.google.android.gms.common.api.Status status ){
                 if( toast != null ){
-                    showAnimation( status.isSuccess(), status.isSuccess() ? "Message sent." : "Error sending " +
-                            "message..." );
-                    //                    Toast.makeText( getApplicationContext(), toast + ": "  //
-                    //                                    + ( status.isSuccess() ? "success" : "error" ),//
-                    //                            Toast.LENGTH_SHORT ).show();
+                    showAnimation( status.isSuccess(), status.isSuccess() ? "Message sent." : "Error sending " + "message..." );
+
                 }
                 Log.i( getPackageName(), "Data sent to phone. Status => " + status );
             }

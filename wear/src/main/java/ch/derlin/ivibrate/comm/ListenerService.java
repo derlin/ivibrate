@@ -10,6 +10,7 @@ import android.os.Vibrator;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
+import ch.derlin.ivibrate.OpenOnPhoneActivity;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.main.MainActivity;
 import ch.derlin.ivibrate.utils.Friend;
@@ -88,22 +89,28 @@ public class ListenerService extends WearableListenerService{
 
         if( phone == null ) return;
 
-        // if the phone is specified, also add a notification with "reply" action
-        // Create an intent for the reply action
-        Intent actionIntent = new Intent( this, MainActivity.class );
-        actionIntent.putExtra( "phone", phone );
-
-        PendingIntent actionPendingIntent = PendingIntent.getActivity( this, 0, actionIntent, PendingIntent
+        // Create the reply action
+        Intent replyActionIntent = new Intent( this, MainActivity.class );
+        replyActionIntent.putExtra( "phone", phone );
+        PendingIntent replyActionPendingIntent = PendingIntent.getActivity( this, 0, replyActionIntent, PendingIntent
                 .FLAG_UPDATE_CURRENT );
+        NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder( R.drawable
+                .reply_action, "Reply", replyActionPendingIntent ).build();
 
-        // Create the action
-        NotificationCompat.Action action = new NotificationCompat.Action.Builder( R.drawable
-                .reply_action, "Reply", actionPendingIntent ).build();
+        // Create the open on phone intent
+        Intent openActionIntent = new Intent( this, OpenOnPhoneActivity.class );
+        openActionIntent.putExtra( "phone", phone );
+        PendingIntent openActionPendingIntent = PendingIntent.getActivity( this, 0, openActionIntent, PendingIntent
+                .FLAG_UPDATE_CURRENT );
+        NotificationCompat.Action openOnPhoneAction = new NotificationCompat.Action.Builder( R.drawable.open_action,
+                "Open on phone", openActionPendingIntent ).build();
+
 
         // Build the notification and add the action via WearableExtender
         Bitmap bg = BitmapFactory.decodeResource( getApplicationContext().getResources(), R.drawable.background );
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
-        wearableExtender.addAction( action );
+        wearableExtender.addAction( replyAction );
+        wearableExtender.addAction( openOnPhoneAction );
         wearableExtender.setBackground( bg );
 
 
