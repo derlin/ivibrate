@@ -61,6 +61,14 @@ public class SqlDataSource implements AutoCloseable{
      * Friends
      * ****************************************************************/
 
+    public boolean friendExists(String phone){
+        Cursor cursor = db.query( F_TABLE_NAME, null, F_COL_PHONE + "= ?", new String[]{ phone }, null, null,
+                null );
+        cursor.moveToFirst();
+        boolean ret = !cursor.isAfterLast();
+        cursor.close();
+        return ret;
+    }
 
     public boolean addFriend( Friend friend ){
         return db.insert( F_TABLE_NAME, null, friendToContentValues( friend ) ) > 0;
@@ -76,7 +84,7 @@ public class SqlDataSource implements AutoCloseable{
 
 
     public Friend getFriend( String phone ){
-        Cursor cursor = db.query( F_TABLE_NAME, null, P_COL_PHONE + "= ?", new String[]{ phone }, null, null, null );
+        Cursor cursor = db.query( F_TABLE_NAME, null, F_COL_PHONE + "= ?", new String[]{ phone }, null, null, null );
         cursor.moveToFirst();
         Friend f = null;
         if( !cursor.isAfterLast() ) f = cursorToFriend( cursor );

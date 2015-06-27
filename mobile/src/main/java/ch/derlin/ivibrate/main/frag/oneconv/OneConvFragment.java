@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Lucy Linder
  */
-public class OneConvFragment extends Fragment{
+public class OneConvFragment extends Fragment implements AdapterView.OnItemClickListener{
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_FRIEND = "param1";
@@ -130,10 +130,9 @@ public class OneConvFragment extends Fragment{
 
         // Set the adapter
         mListView = ( AbsListView ) view.findViewById( android.R.id.list );
-        mListView.setAdapter( mAdapter );
 
         // Set OnItemClickListener so we can be notified on item clicks
-        //        mListView.setOnItemClickListener( this );
+                mListView.setOnItemClickListener( this );
 
         // remove logo but show the arrow back
         ActionBar actionBar = ( ( ActionBarActivity ) getActivity() ).getSupportActionBar();
@@ -200,18 +199,6 @@ public class OneConvFragment extends Fragment{
         }.execute();
     }
 
-    // ----------------------------------------------------
-
-
-    //    @Override
-    //    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
-    //        if( null != mListener ){
-    //            Message m = ( Message ) mAdapter.getItem( position );
-    //            mListener.onReplayPattern( ( long[] ) //
-    //                    App.getGson().fromJson( m.getPattern(),  //
-    //                            new TypeToken<long[]>(){}.getType() ) );
-    //        }
-    //    }
 
 
     @Override
@@ -254,6 +241,10 @@ public class OneConvFragment extends Fragment{
 
     // ----------------------------------------------------
 
+    @Override
+    public void onItemClick( AdapterView<?> parent, View view, int position, long id ){
+        mListView.showContextMenuForChild( view );
+    }
 
     @Override
     public void onCreateOptionsMenu( Menu menu, MenuInflater inflater ){

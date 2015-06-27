@@ -48,6 +48,7 @@ public class GcmSenderService extends Service{
     private Set<Integer> msgIdSet = new HashSet<>();
     // to notify a message has been sent
     private LocalBroadcastManager mBroadcastManager;
+    private String phone;
 
     // ----------------------------------------------------
     public class GcmSenderBinder extends Binder{
@@ -82,7 +83,9 @@ public class GcmSenderService extends Service{
     public void onCreate(){
         super.onCreate();
         gcm = GoogleCloudMessaging.getInstance( getApplicationContext() );
-        loadRegIdAsync();
+        phone = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
+        .getString( getString( R.string.pref_phone ), null );
+        loadRegIdAsync(null);
         INSTANCE = this;
         mBroadcastManager = LocalBroadcastManager.getInstance( this );
     }
@@ -116,6 +119,7 @@ public class GcmSenderService extends Service{
      * @param phone the phone number of this app, in swiss format (07XXXXXXXX)
      */
     public void registerToServer( String phone ){
+        this.phone = phone;
         String regidKey = getApplicationContext().getString( R.string.pref_regid );
         String versionKey = getApplicationContext().getString( R.string.pref_app_version );
 
@@ -232,12 +236,17 @@ public class GcmSenderService extends Service{
      * @param data the data bundle.
      */
     public void sendData( Bundle data ){
-        data.putString( REGID_KEY, regid ); // always put regid
-        try{
-            String id = getMessageId();
-            gcm.send( PROJECT_ID + "@gcm.googleapis.com", id, data );
-        }catch( IOException e ){
-            Log.e( "GCM", "IOException while sending registration id", e );
+        if(regid == null){
+            loadRegIdAsync(data);
+        }else{
+            data.putString( PHONE_KEY, phone ); // always put phone
+            data.putString( REGID_KEY, regid ); // always put regid
+            try{
+                String id = getMessageId();
+                gcm.send( PROJECT_ID + "@gcm.googleapis.com", id, data );
+            }catch( IOException e ){
+                Log.e( "GCM", "IOException while sending registration id", e );
+            }
         }
     }
 
@@ -279,7 +288,7 @@ public class GcmSenderService extends Service{
 
     /* Get the regid. Ask the regid to Google API and verify it is the same as the one
     * stored in the shared preferences. If not, update it. */
-    private void loadRegIdAsync(){
+    private void loadRegIdAsync(final Bundle data){
         new AsyncTask<Void, Void, Void>(){
 
             @Override
@@ -297,7 +306,7 @@ public class GcmSenderService extends Service{
                             .putString( getString( R.string.pref_regid ), regid ).commit();
                     msg = "Device registered to GCM server, registration ID=" + regid;
                     Log.i( "GCM", msg );
-
+                    if(data != null) sendData( data );
                 }catch( IOException ex ){
                     Log.d( getPackageName(), "Error :" + ex.getMessage() );
 

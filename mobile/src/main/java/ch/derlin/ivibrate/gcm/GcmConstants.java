@@ -17,7 +17,7 @@ public class GcmConstants{
     /** Global intent filter for local broadcasts **/
     public static final String GCM_SERVICE_INTENT_FILTER = "GCM_SERVICE";
     /** prefix for the event types **/
-    public static final String PACKAGE = "ch.derlin.gcm";
+    public static final String PACKAGE = "ch.derlin.ivibrate";
     /** extra present on the intent to launch the main activity from a click on notification  **/
     public static final String NOTIFICATION_KEY = "NOTIFICATION";
 
@@ -25,6 +25,7 @@ public class GcmConstants{
     public static final String TO_KEY = "to";
     public static final String FROM_KEY = "from_account"; // from is a reserved keyword
     public static final String REGID_KEY = "regid"; // present in all message
+    public static final String PHONE_KEY = "phone"; // present in all message
     public static final String ACCOUNTS_KEY = "accounts"; // the list of accounts/phones registered
     public static final String MESSAGE_KEY = "message";  // the text message
     public static final String PATTERN_KEY = "pattern";  // the pattern message

@@ -43,7 +43,9 @@ public class IntentServiceCallbacks extends GcmCallbacks{
         // add message to db
         // add message to db
         try( SqlDataSource src = new SqlDataSource( context, true ) ){
-            src.addFriend( f );
+            if(!src.friendExists( f.getPhone() )){
+                src.addFriend( f );
+            }
             src.addMessage( message );
         }catch( SQLException e ){
             Log.d( context.getPackageName(), "error adding message " + e );
@@ -87,7 +89,6 @@ public class IntentServiceCallbacks extends GcmCallbacks{
                 .setLocalOnly( true ); // don't show it in the watch
 
         Intent targetIntent = new Intent( context, MainActivity.class );
-        targetIntent.putExtra( GcmConstants.NOTIFICATION_KEY, true );
         targetIntent.putExtra( GcmConstants.FROM_KEY, from );
         PendingIntent contentIntent = PendingIntent.getActivity( context, 0, targetIntent, PendingIntent
                 .FLAG_UPDATE_CURRENT );

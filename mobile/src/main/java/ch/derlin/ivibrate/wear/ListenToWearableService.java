@@ -1,8 +1,12 @@
 package ch.derlin.ivibrate.wear;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
+import ch.derlin.ivibrate.gcm.GcmConstants;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
+import ch.derlin.ivibrate.main.MainActivity;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Friend;
 import com.google.android.gms.wearable.*;
@@ -72,6 +76,22 @@ public class ListenToWearableService extends WearableListenerService{
                 SendToWearableService.getInstance().sendContacts( list );
             }catch( SQLException e ){
                 Log.d( getPackageName(), "error retrieving friends" );
+            }
+        }else if( action.equals( "open" ) ){
+            String phone = dataMap.getString( "phone" );
+
+            if( phone != null ){
+                // don't know why, but the extras are only passed with a pendingIntent...
+                try{
+                    Intent intent = new Intent( getApplicationContext(), MainActivity.class );
+                    intent.putExtra( GcmConstants.FROM_KEY, phone );
+                    PendingIntent pendingIntent = PendingIntent.getActivity( getApplicationContext(), 0, intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT );
+                    pendingIntent.send( getApplicationContext(), 0, new Intent() );
+
+                }catch( PendingIntent.CanceledException e ){
+                    e.printStackTrace();
+                }
             }
         }
     }

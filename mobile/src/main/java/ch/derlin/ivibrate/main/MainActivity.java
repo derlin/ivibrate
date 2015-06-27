@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
@@ -117,6 +118,16 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        GcmSenderService.getInstance().registerToServer( //
+                PreferenceManager.getDefaultSharedPreferences( this ) //
+                        .getString( getResources().getString( R.string.pref_phone ), null ) //
+        );
+    }
+
+
+    @Override
     protected void onStop(){
         mGcmCallbacks.unregisterSelf( this );
         mWearableCallbacks.unregisterSelf( this );
@@ -126,6 +137,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
     @Override
     protected void onNewIntent( Intent intent ){
+        setIntent( intent );
         Friend f = getFriendExtra();
         if( f != null ){
             onConversationSelected( f );
@@ -272,7 +284,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
     private Friend getFriendExtra(){
         Bundle extras = getIntent().getExtras();
         // if a notification was pressed, show the contact
-        if( extras != null && extras.containsKey( GcmConstants.NOTIFICATION_KEY ) ){
+        if( extras != null && extras.containsKey( GcmConstants.FROM_KEY ) ){
             String from = extras.getString( GcmConstants.FROM_KEY );
             try( SqlDataSource src = new SqlDataSource( this, true ) ){
                 return src.getFriend( from );
