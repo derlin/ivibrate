@@ -69,4 +69,9 @@ public class CcsMessage{
     public Map<String, String> getPayload(){
         return mPayload;
     }
+
+
+    public String getPhone(){
+        return mPayload.get( GcmConstants.PHONE_KEY );
+    }
 }

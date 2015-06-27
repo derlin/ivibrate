@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Handles an echo request.
  */
-public class MessageProcessor implements IPayloadProcessor{
+public class AckProcessor implements IPayloadProcessor{
 
     @Override
     public void handleMessage( ch.derlin.ivibrate.CcsMessage msg ){
@@ -32,32 +32,14 @@ public class MessageProcessor implements IPayloadProcessor{
             AccountsManager dao = AccountsManager.getInstance();
             String account = msg.getPayload().get( GcmConstants.TO_KEY );
 
-            String from = dao.getName( msg.getFromRegid() );
             String to = dao.getRegistrationId( account );  // "0764143203" );// TODO
-
-            if( from == null ){
-                String phone = msg.getPhone();
-                if( phone != null && msg.getFromRegid() != null ){
-                    dao.addAccount( phone, msg.getFromRegid() );
-                    from = phone;
-                }else{
-                    msg.getPayload().put( GcmConstants.ERROR_KEY, GcmConstants.FROM_KEY );
-                    new NackProcessor().handleMessage( msg );
-                }
-
-            }else if( to == null ){
-                msg.getPayload().put( GcmConstants.ERROR_KEY, GcmConstants.TO_KEY );
-                new NackProcessor().handleMessage( msg );
-                return;
-
-            }
+            String from = dao.getName( msg.getFromRegid() );
 
             Map<String, String> payload = msg.getPayload();
-            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_MESSAGE );
+            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_ACK );
             payload.put( GcmConstants.FROM_KEY, from );
             String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
             CcsClient.getInstance().send( jsonRequest );
-
 
         }catch( Exception e ){
             System.err.println( "Error " + e );

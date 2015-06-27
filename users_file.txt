@@ -1,0 +1,8 @@
+{
+  "users": {
+    "lucy": "APA91bG_Cl2F4sjlSoXSLonXRpucB0cVIgAs2WNNqjPqG7x8AIivi_JwQXLL21hvMDdhzm_j-gXeOgU3wSYaII8RiKIqxjgf3qwaULFqI_puq1huEaxlczwiYTX4Q33ZDghkzf6MIkQH7RbNDRRwJD3kYpyXpreDwg"
+  },
+  "tokenIds": {
+    "APA91bG_Cl2F4sjlSoXSLonXRpucB0cVIgAs2WNNqjPqG7x8AIivi_JwQXLL21hvMDdhzm_j-gXeOgU3wSYaII8RiKIqxjgf3qwaULFqI_puq1huEaxlczwiYTX4Q33ZDghkzf6MIkQH7RbNDRRwJD3kYpyXpreDwg": "lucy"
+  }
+}
