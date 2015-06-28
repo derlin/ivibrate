@@ -32,7 +32,7 @@
 
         <activity
             android:name=".pattern.PatternActivity"
-            android:label="Create pattern" />
+            android:label="Send a message" />
 
         <activity
             android:name=".start.StartActivity"

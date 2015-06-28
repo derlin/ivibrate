@@ -27,6 +27,9 @@
         android:background="@color/myTextPrimaryColor" />
 
     <include android:id="@+id/buttonPanel"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_alignParentBottom="true"
         layout="@layout/two_buttons_panel" />
 
 </RelativeLayout>
