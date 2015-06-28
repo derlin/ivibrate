@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -67,8 +68,13 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         setContentView( R.layout.activity_main );
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar_actionbar );
         setSupportActionBar( toolbar );
-        getSupportActionBar().setDisplayUseLogoEnabled( true );
-        getSupportActionBar().setLogo( R.mipmap.ic_launcher );
+
+        ActionBar actionBar = getSupportActionBar();
+        if( actionBar != null ){
+            actionBar.setDisplayUseLogoEnabled( true );
+            actionBar.setLogo( R.mipmap.ic_launcher );
+        }
+
         setTitle( "IVibrate" );
 
         Friend f = getFriendExtra();
@@ -88,7 +94,9 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
     private void setFragment( Fragment f ){
         getSupportFragmentManager().beginTransaction() //
                 .replace( R.id.container, f )  //
-                .commit();
+                // avoid "can not perform this action after
+                // OnSaveInstanceState" error
+                .commitAllowingStateLoss();
     }
 
 
