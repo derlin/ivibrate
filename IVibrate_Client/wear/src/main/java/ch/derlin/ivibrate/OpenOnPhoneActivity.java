@@ -22,7 +22,7 @@ public class OpenOnPhoneActivity extends Activity{
     protected void onCreate( Bundle savedInstanceState ){
         super.onCreate( savedInstanceState );
         String phone = getIntent().getExtras().getString( "phone" );
-        SendToPhoneService.getInstance().askOpenApp(phone);
+        SendToPhoneService.askOpenApp(phone);
         NotificationManagerCompat.from( getApplicationContext() ).cancel( Integer.parseInt( phone ) );
         finish();
     }

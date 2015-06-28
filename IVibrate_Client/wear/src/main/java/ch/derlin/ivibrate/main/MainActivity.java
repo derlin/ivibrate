@@ -2,12 +2,8 @@ package ch.derlin.ivibrate.main;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.speech.RecognizerIntent;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.wearable.view.WatchViewStub;
@@ -42,35 +38,11 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
 
     // ----------------------------------------------------
 
-    private ServiceConnection mConnection = new ServiceConnection(){
-        @Override
-        public void onServiceConnected( ComponentName name, IBinder service ){
-            setInterface( getIntent() );
-        }
-
-
-        @Override
-        public void onServiceDisconnected( ComponentName name ){
-
-        }
-    };
-
-    // ----------------------------------------------------
-
 
     @Override
     protected void onDestroy(){
         ListenerService.isWaitingForContact( false );
-        unbindService( mConnection );
         super.onDestroy();
-    }
-
-
-    @Override
-    protected void onStart(){
-        super.onStart();
-        Intent intent = new Intent( this, SendToPhoneService.class );
-        bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
     }
 
 
@@ -84,7 +56,14 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         }
     }
 
-    // ----------------------------------------------------
+
+     @Override
+     protected void onCreate( Bundle savedInstanceState ){
+         super.onCreate( savedInstanceState );
+         setInterface( getIntent() );
+     }
+
+     // ----------------------------------------------------
 
     /* set the interface */
     private void setInterface( Intent intent ){
@@ -93,7 +72,7 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         final Fragment f;
         if( extras == null ){
             // no phone => ask for the contact's list and show a progressbar
-            SendToPhoneService.getInstance().askForContacts();
+            SendToPhoneService.askForContacts();
             f = WaitFragment.getInstance( "Retrieving contact's list..." );
             ListenerService.isWaitingForContact( true );
 
@@ -139,7 +118,7 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
     /* ask the phone to send a new message and quit
     * (a feedback animation will be played by the service itself) */
     private void send(){
-        SendToPhoneService.getInstance().send( phone, pattern, text );
+        SendToPhoneService.send( phone, pattern, text );
         finish();
     }
 

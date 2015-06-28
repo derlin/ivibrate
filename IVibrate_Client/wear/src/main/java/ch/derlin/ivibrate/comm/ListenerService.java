@@ -70,7 +70,7 @@ public class ListenerService extends WearableListenerService{
                 Log.v( "wearable", "DataMap received on watch: " + dataMap );
 
             }else{
-                SendToPhoneService.getInstance().sendStatus( false );
+                SendToPhoneService.sendStatus( false );
                 Log.d( "wearable", "event type " + event.getType() );
 
             }
@@ -107,7 +107,7 @@ public class ListenerService extends WearableListenerService{
         vibrator.vibrate( pattern, INDEX_IN_PATTERN_TO_REPEAT );
         Log.d( "wearable", "pattern received and played" );
 
-        SendToPhoneService.getInstance().sendStatus( true );
+        SendToPhoneService.sendStatus( true );
 
         if( phone == null ) return; // do nothing if it is a replay
 
