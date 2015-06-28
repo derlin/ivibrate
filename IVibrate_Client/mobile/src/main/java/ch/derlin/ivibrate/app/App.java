@@ -2,8 +2,6 @@ package ch.derlin.ivibrate.app;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
-import ch.derlin.ivibrate.wear.SendToWearableService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -56,16 +54,7 @@ public class App extends Application{
     @Override
     public void onCreate(){
         super.onCreate();
-
         appContext = this.getApplicationContext();
-        this.startService( new Intent( this, SendToWearableService.class ) );
-
     }
 
-
-    @Override
-    public void onTerminate(){
-        this.stopService( new Intent( this, SendToWearableService.class ) );
-        super.onTerminate();
-    }
 }

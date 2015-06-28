@@ -38,7 +38,7 @@ public class GcmReceiverServiceCallbacks extends GcmCallbacks{
     public void onMessageReceived( String from, Message message ){
         // send pattern to the watch
         Friend f = new Friend( from );
-        SendToWearableService.getInstance().sendPattern( message.getPatternObject(), f );
+        SendToWearableService.sendPattern( message.getPatternObject(), f );
 
         // add message to db
         // add message to db

@@ -262,7 +262,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
     @Override
     public void onReplayPattern( long[] pattern ){
-        SendToWearableService.getInstance().sendPattern( pattern );
+        SendToWearableService.sendPattern( pattern );
     }
 
     /* *****************************************************************

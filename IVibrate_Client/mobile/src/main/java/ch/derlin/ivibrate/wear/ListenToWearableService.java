@@ -2,6 +2,7 @@ package ch.derlin.ivibrate.wear;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 import ch.derlin.ivibrate.gcm.GcmConstants;
@@ -25,6 +26,17 @@ import java.util.ArrayList;
  * @author Lucy Linder
  */
 public class ListenToWearableService extends WearableListenerService{
+
+    @Override
+    public void onCreate(){
+        super.onCreate();
+    }
+
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+    }
 
 
     @Override
@@ -66,14 +78,14 @@ public class ListenToWearableService extends WearableListenerService{
 
         }else if( action.equals( "getContacts" ) ){
             try( SqlDataSource src = new SqlDataSource( getApplicationContext(), true ) ){
-                ArrayList<DataMap> list = new ArrayList<>();
+                ArrayList<Bundle> list = new ArrayList<>();
                 for( Friend friend : src.getFriends().values() ){
-                    DataMap dm = new DataMap();
+                    Bundle dm = new Bundle();
                     dm.putString( "phone", friend.getPhone() );
                     dm.putString( "name", friend.getDisplayName() );
                     list.add( dm );
                 }//end for
-                SendToWearableService.getInstance().sendContacts( list );
+                SendToWearableService.sendContacts( list );
             }catch( SQLException e ){
                 Log.d( getPackageName(), "error retrieving friends" );
             }
