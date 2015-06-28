@@ -1,34 +1,34 @@
 package ch.derlin.ivibrate.gcm;
 
-import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.*;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
+import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.sql.SqlDataSource;
 import ch.derlin.ivibrate.sql.entities.Message;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 
 import static ch.derlin.ivibrate.gcm.GcmConstants.*;
 
 /**
- * Singleton service in charge of sending message
- * to the GCM server. Can also be used as a bound service.
- * Started with the application.
+ * Intent service in charge of sending message
+ * to the GCM server.
+ * Static methods are available to wake up the service
+ * with the proper arguments.
  * -------------------------------------------------  <br />
  * context      Advanced Interface - IVibrate project <br />
  * date         June 2015                             <br />
@@ -36,90 +36,187 @@ import static ch.derlin.ivibrate.gcm.GcmConstants.*;
  *
  * @author Lucy Linder
  */
-public class GcmSenderService extends Service{
-
-    private static GcmSenderService INSTANCE;
-
-    private GoogleCloudMessaging gcm;
-    private String regid; // current regid of the user
-    private Gson gson = new GsonBuilder().create();
-    // to generate unique message ids
-    private static Random random = new Random();
-    private Set<Integer> msgIdSet = new HashSet<>();
-    // to notify a message has been sent
-    private LocalBroadcastManager mBroadcastManager;
-    private String phone;
-
-    // ----------------------------------------------------
-    public class GcmSenderBinder extends Binder{
-        GcmSenderService getService(){
-            // Return this instance of LocalService so clients can call public methods
-            return GcmSenderService.this;
-        }
-    }
-
-    private final IBinder mBinder = new GcmSenderBinder();
-
-
-    @Override
-    public IBinder onBind( Intent intent ){
-        return mBinder;
-    }
-    // ----------------------------------------------------
-
-
-    public static GcmSenderService getInstance(){
-        return INSTANCE;
-    }
-
-    // ----------------------------------------------------
-
+public class GcmSenderService extends IntentService{
 
     public GcmSenderService(){
+        super( "GcmSenderService" );
     }
 
-
-    @Override
-    public void onCreate(){
-        super.onCreate();
-        gcm = GoogleCloudMessaging.getInstance( getApplicationContext() );
-        phone = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
-        .getString( getString( R.string.pref_phone ), null );
-        loadRegIdAsync(null);
-        INSTANCE = this;
-        mBroadcastManager = LocalBroadcastManager.getInstance( this );
-    }
+    /* *****************************************************************
+     * static methods to launch the intent service
+     * ****************************************************************/
 
 
-    @Override
-    public void onDestroy(){
-        INSTANCE = null;
-        if( gcm != null ){
-            gcm.close();
-            gcm = null;
-        }
-        super.onDestroy();
-    }
-
-
-    // ----------------------------------------------------
-
-
-    public String getRegId(){
-        return regid;
+    /**
+     * Register to the IVibrate server upon a regid change.
+     */
+    public static void register(){
+        wakeUpService( ACTION_REGISTER, new Bundle() );
     }
 
 
     /**
-     * Register to the IVibrate server, sending a phone with a regid.
-     * Note that if the current regid is already valid, no message will be sent.
-     * A regid can be updated by google (never happens in practice) or everytime the
-     * application is installed or the system is updated.
+     * Register to the IVibrate server upon a regid change
+     * or a first registration. The phone will be saved to
+     * preferences.
      *
-     * @param phone the phone number of this app, in swiss format (07XXXXXXXX)
+     * @param phone the phone number, in swiss format: 07XXXXXXXX.
      */
-    public void registerToServer( String phone ){
-        this.phone = phone;
+    public static void register( String phone ){
+        PreferenceManager.getDefaultSharedPreferences( App.getAppContext() ) //
+                .edit().putString( App.getAppContext().getString( R.string.pref_phone ), phone ).commit();
+        register();
+    }
+
+
+    /**
+     * Send a ack.
+     *
+     * @param to        the receiver's phone.
+     * @param messageId the message id to ack.
+     */
+    public static void sendAck( String to, String messageId ){
+        Bundle data = new Bundle();
+        data.putString( TO_KEY, to );
+        data.putString( MESSAGE_ID_KEY, messageId );
+        wakeUpService( ACTION_ACK, data );
+    }
+
+
+    /**
+     * Ask the server for all the phone numbers currently registered.
+     */
+    public static void askForAccounts(){
+        wakeUpService( ACTION_GET_ACCOUNTS, new Bundle() );
+    }
+
+
+    /**
+     * Send a message.
+     *
+     * @param to      the phone of the receiver.
+     * @param pattern the vibration pattern.
+     * @param text    the optional text.
+     */
+    public static void sendMessage( String to, long[] pattern, String text ){
+
+        // create data bundle
+        Bundle data = new Bundle();
+        data.putString( TO_KEY, to );
+        data.putString( PATTERN_KEY, App.getGson().toJson( pattern ) );
+        data.putString( MESSAGE_KEY, text );
+
+        wakeUpService( ACTION_MESSAGE_RECEIVED, data );
+    }
+
+
+    /**
+     * Send a message.
+     *
+     * @param to      the phone number of the receiver.
+     * @param pattern the vibration pattern.
+     */
+    public void sendMessage( String to, long[] pattern ){
+        sendMessage( to, pattern, null );
+    }
+
+
+    /**
+     * Send an echo message. Used mainly to test the server.
+     *
+     * @param message the text message to echo.
+     */
+    public static void sendEcho( String message ){
+        Bundle data = new Bundle();
+        data.putString( MESSAGE_KEY, message );
+
+        wakeUpService( ACTION_ECHO, data );
+    }
+
+    // ----------------------------------------------------
+
+
+    private static void wakeUpService( String action, Bundle data ){
+        data.putString( ACTION_KEY, action );
+        Intent intent = new Intent( App.getAppContext(), GcmSenderService.class );
+        intent.putExtras( data );
+
+        App.getAppContext().startService( intent );
+    }
+
+    /* *****************************************************************
+     * handling intents
+     * ****************************************************************/
+
+
+    @Override
+    protected void onHandleIntent( Intent intent ){
+        Bundle extra = intent.getExtras();
+
+        if( extra == null ){
+            Log.e( getPackageName(), "Error: SenderIntentService called without extra" );
+            return;
+        }
+
+        String action = extra.getString( ACTION_KEY, null );
+
+        if( ACTION_REGISTER.equals( action ) ){
+            loadRegIdAsync();
+
+        }else if( ACTION_UNREGISTER.equals( action ) ){
+            unregisterFromServer();
+
+        }else{
+            if( ACTION_MESSAGE_RECEIVED.equals( action ) ){
+                Long id = saveMessage( extra );
+
+                if( id == null ){
+                    Toast.makeText( getApplicationContext(), "Error: the message could not be saved (not sent)", //
+                            Toast.LENGTH_SHORT ).show();
+                    return;
+                }
+                extra.putString( MESSAGE_ID_KEY, "" + id );
+                sendData( extra );
+                notify( extra );
+            }else{
+                sendData( extra );
+            }
+
+        }
+    }
+
+
+
+
+    /* *****************************************************************
+     * private utils
+     * ****************************************************************/
+
+
+    /*
+     * Unregister to the IVibrate server.
+     */
+    public void unregisterFromServer(){
+        String phone = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
+                .getString( getString( R.string.pref_phone ), null );
+
+        if( phone == null ) return;
+
+        Bundle data = new Bundle();
+        data.putString( ACTION_KEY, ACTION_REGISTER );
+        data.putString( MESSAGE_KEY, phone );
+        sendData( data );
+    }
+
+
+    /*
+   * Register to the IVibrate server, sending a phone with a regid.
+   * Note that if the current regid is already valid, no message will be sent.
+   * A regid can be updated by google (never happens in practice) or everytime the
+   * application is installed or the system is updated.
+   */
+    private void registerToServer( String phone, String regid ){
+
         String regidKey = getApplicationContext().getString( R.string.pref_regid );
         String versionKey = getApplicationContext().getString( R.string.pref_app_version );
 
@@ -143,152 +240,9 @@ public class GcmSenderService extends Service{
     }
 
 
-    /**
-     * Unregister to the IVibrate server.
-     */
-    public void unregisterFromServer(){
-        String phone = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ) //
-                .getString( getString( R.string.pref_phone ), null );
-
-        if( phone == null ) return;
-
-        Bundle data = new Bundle();
-        data.putString( ACTION_KEY, ACTION_REGISTER );
-        data.putString( MESSAGE_KEY, phone );
-        sendData( data );
-    }
-
-
-    /**
-     * Ask the server for all the phone numbers currently registered.
-     */
-    public void askForAccounts(){
-        Bundle data = new Bundle();
-        data.putString( ACTION_KEY, ACTION_GET_ACCOUNTS );
-        sendData( data );
-    }
-
-
-    /**
-     * Send a message.
-     *
-     * @param to      the phone of the receiver.
-     * @param pattern the vibration pattern.
-     * @param text    the optional text.
-     */
-    public void sendMessage( String to, long[] pattern, String text ){
-        // save it to local db
-        Message m = Message.createSentInstance( to, pattern, text );
-        saveMessage( m );
-
-        // create data bundle
-        Bundle data = new Bundle();
-        data.putString( ACTION_KEY, ACTION_MESSAGE_RECEIVED );
-        data.putString( TO_KEY, to );
-        data.putString( PATTERN_KEY, gson.toJson( pattern ) );
-        data.putString( MESSAGE_KEY, text );
-        data.putString( MESSAGE_ID_KEY, "" + m.getId() );
-        // send message
-        sendData( data );
-        // notify the GcmCallbacks (local broadcast)
-        notify( data );
-    }
-
-
-    /**
-     * Send a message.
-     *
-     * @param to      the phone number of the receiver.
-     * @param pattern the vibration pattern.
-     */
-    public void sendMessage( String to, long[] pattern ){
-        sendMessage( to, pattern, null );
-    }
-
-
-    /**
-     * Send an echo message. Used mainly to test the server.
-     *
-     * @param pattern the vibration pattern.
-     */
-    public void sendEcho( long[] pattern ){
-        sendEcho( gson.toJson( pattern ) );
-    }
-
-
-    /**
-     * Send an echo message. Used mainly to test the server.
-     *
-     * @param message the text message to echo.
-     */
-    public void sendEcho( String message ){
-        Bundle data = new Bundle();
-        data.putString( ACTION_KEY, GcmConstants.ACTION_ECHO );
-        data.putString( MESSAGE_KEY, message );
-        sendData( data );
-    }
-
-
-    /**
-     * Send data to the server. Will add the regid to the data and send
-     * it as is.
-     *
-     * @param data the data bundle.
-     */
-    public void sendData( Bundle data ){
-        if(regid == null){
-            loadRegIdAsync(data);
-        }else{
-            data.putString( PHONE_KEY, phone ); // always put phone
-            data.putString( REGID_KEY, regid ); // always put regid
-            try{
-                String id = getMessageId();
-                gcm.send( PROJECT_ID + "@gcm.googleapis.com", id, data );
-            }catch( IOException e ){
-                Log.e( "GCM", "IOException while sending registration id", e );
-            }
-        }
-    }
-
-    // ----------------------------------------------------
-
-
-    /* notify a message has been sent. */
-    private void notify( Bundle data ){
-        Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
-        i.putExtra( EXTRA_EVT_TYPE, ACTION_MESSAGE_SENT );
-        i.putExtras( data );
-        mBroadcastManager.sendBroadcast( i );
-    }
-
-
-    /* save a message after it has been sent. */
-    private void saveMessage( Message message ){
-        // add message to db
-        Context context = App.getAppContext();
-        try( SqlDataSource src = new SqlDataSource( context, true ) ){
-            src.addMessage( message );
-        }catch( SQLException e ){
-            Log.d( context.getPackageName(), "error adding message " + e );
-        }
-    }
-
-
-    /* Generate a unique message id. */
-    private String getMessageId(){
-        int id;
-        do{
-            id = random.nextInt();
-        }while( msgIdSet.contains( id ) );
-
-        msgIdSet.add( id );
-        return Integer.toString( id );
-    }
-
-
     /* Get the regid. Ask the regid to Google API and verify it is the same as the one
     * stored in the shared preferences. If not, update it. */
-    private void loadRegIdAsync(final Bundle data){
+    private void loadRegIdAsync(){
         new AsyncTask<Void, Void, Void>(){
 
             @Override
@@ -299,14 +253,15 @@ public class GcmSenderService extends Service{
                     String scope = "GCM"; // e.g. communicating using GCM, but you can use any
                     // URL-safe characters up to a maximum of 1000, or
                     // you can also leave it blank.
-                    regid = InstanceID.getInstance( App.getAppContext() ).getToken( authorizedEntity, scope );
+                    String regid = InstanceID.getInstance( App.getAppContext() ).getToken( authorizedEntity, scope );
 
-                    //                    String regid = gcm.register( GcmConstants.PROJECT_ID );
-                    PreferenceManager.getDefaultSharedPreferences( getApplicationContext() ).edit() //
-                            .putString( getString( R.string.pref_regid ), regid ).commit();
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+                    prefs.edit().putString( getString( R.string.pref_regid ), regid ).apply();
+
                     msg = "Device registered to GCM server, registration ID=" + regid;
                     Log.i( "GCM", msg );
-                    if(data != null) sendData( data );
+
+                    registerToServer( prefs.getString( getString( R.string.pref_phone ), null ), regid );
                 }catch( IOException ex ){
                     Log.d( getPackageName(), "Error :" + ex.getMessage() );
 
@@ -316,5 +271,69 @@ public class GcmSenderService extends Service{
 
         }.execute();
     }
+
+
+    /* save a message and return its id, or null if an error occurs. */
+    private Long saveMessage( Bundle data ){
+        // add message to db
+        String to = data.getString( TO_KEY );
+        long[] pattern = AppUtils.getPatternFromString( data.getString( PATTERN_KEY ) );
+        String text = data.getString( MESSAGE_KEY );
+
+        if( to == null || pattern == null ) return null;
+
+        Message message = Message.createSentInstance( to, pattern, text );
+        Context context = App.getAppContext();
+
+        try( SqlDataSource src = new SqlDataSource( context, true ) ){
+            src.addMessage( message );
+            return message.getId();
+
+        }catch( SQLException e ){
+            Log.d( context.getPackageName(), "error adding message " + e );
+        }
+
+        return null;
+    }
+
+
+    /* add phone and regid to the message's data */
+    private Bundle addRequiredInfos( Bundle data ){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences( getApplicationContext() );
+        data.putString( PHONE_KEY, prefs.getString( getString( R.string.pref_phone ), null ) );
+        data.putString( REGID_KEY, prefs.getString( getString( R.string.pref_regid ), null ) );
+        return data;
+    }
+
+
+    /*
+     * Send data to the server. Will add the regid + phone to the data and send
+     * it as is.
+     */
+    private void sendData( Bundle data ){
+
+        GoogleCloudMessaging.getInstance( getApplicationContext() );
+        data = addRequiredInfos( data );
+
+        try{
+            String id = App.getMessageId();
+
+            GoogleCloudMessaging.getInstance( getApplicationContext() ) //
+                    .send( PROJECT_ID + "@gcm.googleapis.com", id, data );
+
+        }catch( IOException e ){
+            Log.e( "GCM", "IOException while sending registration id", e );
+        }
+    }
+
+
+    /* notify a message has been sent. */
+    private void notify( Bundle data ){
+        Intent i = new Intent( GCM_SERVICE_INTENT_FILTER );
+        i.putExtra( EXTRA_EVT_TYPE, ACTION_MESSAGE_SENT );
+        i.putExtras( data );
+        LocalBroadcastManager.getInstance( getApplicationContext() ).sendBroadcast( i );
+    }
+
 
 }

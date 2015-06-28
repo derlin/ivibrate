@@ -28,7 +28,7 @@ import java.sql.SQLException;
  *
  * @author Lucy Linder
  */
-public class IntentServiceCallbacks extends GcmCallbacks{
+public class GcmReceiverServiceCallbacks extends GcmCallbacks{
 
     Context context = App.getAppContext();
     NotificationManager nManager = ( NotificationManager ) context.getSystemService( Context.NOTIFICATION_SERVICE );

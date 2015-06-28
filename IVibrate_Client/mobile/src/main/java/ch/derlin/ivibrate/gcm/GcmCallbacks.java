@@ -4,11 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
-import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.app.App;
 import ch.derlin.ivibrate.app.AppUtils;
 import ch.derlin.ivibrate.sql.entities.Message;
@@ -86,10 +84,7 @@ public class GcmCallbacks extends BroadcastReceiver{
 
                 }else if(FROM_KEY.equals( error )){
                     // error: the registration was unsuccessful. Try again
-                    String phone = PreferenceManager.getDefaultSharedPreferences( context ) //
-                            .getString( context.getString( R.string.pref_phone ), null );
-
-                    if( phone != null ) GcmSenderService.getInstance().registerToServer( phone );
+                    GcmSenderService.register();
                     Toast.makeText(App.getAppContext(), "registration failed. Trying again...", Toast.LENGTH_SHORT).show();
                 }
 

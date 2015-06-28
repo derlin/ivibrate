@@ -61,7 +61,7 @@ public class ListenToWearableService extends WearableListenerService{
             String text = dataMap.getString( "text" );
 
             if( phone != null && pattern.length > 0 ){
-                GcmSenderService.getInstance().sendMessage( phone, pattern, text );
+                GcmSenderService.sendMessage( phone, pattern, text );
             }
 
         }else if( action.equals( "getContacts" ) ){

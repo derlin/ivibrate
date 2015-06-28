@@ -69,7 +69,7 @@
         </receiver>
 
         <!-- handle a new message received by the GcmReceived -->
-        <service android:name=".gcm.GcmIntentService" />
+        <service android:name=".gcm.GcmReceiverService" />
 
         <service
             android:name=".gcm.GcmSenderService"

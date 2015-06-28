@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
@@ -118,16 +117,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
 
 
     @Override
-    protected void onResume(){
-        super.onResume();
-        GcmSenderService.getInstance().registerToServer( //
-                PreferenceManager.getDefaultSharedPreferences( this ) //
-                        .getString( getResources().getString( R.string.pref_phone ), null ) //
-        );
-    }
-
-
-    @Override
     protected void onStop(){
         mGcmCallbacks.unregisterSelf( this );
         mWearableCallbacks.unregisterSelf( this );
@@ -211,7 +200,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
                 String text = data.getStringExtra( "message" );
                 Friend friend = data.getParcelableExtra( "friend" );
 
-                GcmSenderService.getInstance().sendMessage( friend.getPhone(), pattern, text );
+                GcmSenderService.sendMessage( friend.getPhone(), pattern, text );
                 Toast.makeText( this, "Message sent to " + friend.getPhone() + ".", Toast.LENGTH_SHORT ).show();
 
             }else{
@@ -232,7 +221,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
     public void onAddConversation(){
         if( mAvailableContacts == null ){
             mNewConvPending = true;
-            GcmSenderService.getInstance().askForAccounts();
+            GcmSenderService.askForAccounts();
         }else{
             addConversation();
         }
@@ -259,7 +248,7 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         }else{
             Message m = message[ 0 ];
             // one pattern, just send it
-            GcmSenderService.getInstance().sendMessage( friend.getPhone(), m.getPatternObject(), m.getText() );
+            GcmSenderService.sendMessage( friend.getPhone(), m.getPatternObject(), m.getText() );
         }
     }
 

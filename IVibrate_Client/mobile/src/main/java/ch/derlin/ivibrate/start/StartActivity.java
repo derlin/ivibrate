@@ -1,8 +1,8 @@
 package ch.derlin.ivibrate.start;
 
-import android.content.*;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -38,37 +38,6 @@ public class StartActivity extends FragmentActivity{
 
     // ----------------------------------------------------
 
-    private ServiceConnection mConnection = new ServiceConnection(){
-        @Override
-        public void onServiceConnected( ComponentName name, IBinder service ){
-            setInterface();
-        }
-
-
-        @Override
-        public void onServiceDisconnected( ComponentName name ){
-
-        }
-    };
-
-    // ----------------------------------------------------
-
-    @Override
-    protected void onDestroy(){
-        unbindService( mConnection );
-        super.onDestroy();
-    }
-
-
-    @Override
-    protected void onStart(){
-        super.onStart();
-        Intent intent = new Intent(this, GcmSenderService.class);
-        bindService( intent, mConnection, Context.BIND_AUTO_CREATE );
-    }
-
-    // ----------------------------------------------------
-
 
     @Override
     protected void onCreate( Bundle savedInstanceState ){
@@ -80,21 +49,15 @@ public class StartActivity extends FragmentActivity{
 
         phone = PreferenceManager.getDefaultSharedPreferences( this ).getString( getString( R.string.pref_phone ), null );
         setContentView( R.layout.activity_start );
-        getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new DummyFragment() ).commit();
+//        getSupportFragmentManager().beginTransaction().replace( R.id.fragment, new DummyFragment() ).commit();
+        setInterface();
 
     }
 
     protected void setInterface(){
 
         if( phone != null ){
-            while(GcmSenderService.getInstance() == null){
-                try{
-                    Thread.sleep( 100 );
-                }catch( InterruptedException e ){
-                    e.printStackTrace();
-                }
-            }; // wait for the app to start TODO
-            GcmSenderService.getInstance().registerToServer( phone );
+            GcmSenderService.register();
             launchMainActivity();
 
         }else{
@@ -165,9 +128,7 @@ public class StartActivity extends FragmentActivity{
         public void onClick( View v ){
             phone = et.getText().toString();
             if( phone.matches( "07[0-9]{8}" ) ){
-                GcmSenderService.getInstance().registerToServer( phone );
-                PreferenceManager.getDefaultSharedPreferences( getActivity() ).edit() //
-                .putString( getActivity().getString( R.string.pref_phone ), phone ). commit();
+                GcmSenderService.register( phone );
                 launchMainActivity();
 
             }else{

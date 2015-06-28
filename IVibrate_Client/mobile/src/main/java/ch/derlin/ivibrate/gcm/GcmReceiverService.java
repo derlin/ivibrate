@@ -22,14 +22,14 @@ import static ch.derlin.ivibrate.gcm.GcmConstants.*;
  *
  * @author Lucy Linder
  */
-public class GcmIntentService extends IntentService{
+public class GcmReceiverService extends IntentService{
 
 
     private LocalBroadcastManager mBroadcastManager;
-    private GcmCallbacks mCallbacks = new IntentServiceCallbacks();
+    private GcmCallbacks mCallbacks = new GcmReceiverServiceCallbacks();
 
 
-    public GcmIntentService(){
+    public GcmReceiverService(){
         super( "GcmMessageHandler" );
     }
 
@@ -65,11 +65,7 @@ public class GcmIntentService extends IntentService{
 
         if( ACTION_MESSAGE_RECEIVED.equals( action ) ){
             // send ack
-            Bundle data = new Bundle();
-            data.putString( ACTION_KEY, ACTION_ACK );
-            data.putString( MESSAGE_ID_KEY, extras.getString( MESSAGE_ID_KEY ) );
-            data.putString( TO_KEY, extras.getString( FROM_KEY ) );
-            GcmSenderService.getInstance().sendData( data );
+            GcmSenderService.sendAck( extras.getString( FROM_KEY ), extras.getString( MESSAGE_ID_KEY ) );
         }
 
         mBroadcastManager.sendBroadcast( getIntent( action, extras ) );
