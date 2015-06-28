@@ -92,18 +92,16 @@ public class ListenToWearableService extends WearableListenerService{
         }else if( action.equals( "open" ) ){
             String phone = dataMap.getString( "phone" );
 
-            if( phone != null ){
-                // don't know why, but the extras are only passed with a pendingIntent...
-                try{
-                    Intent intent = new Intent( getApplicationContext(), MainActivity.class );
-                    intent.putExtra( GcmConstants.FROM_KEY, phone );
-                    PendingIntent pendingIntent = PendingIntent.getActivity( getApplicationContext(), 0, intent,
-                            PendingIntent.FLAG_UPDATE_CURRENT );
-                    pendingIntent.send( getApplicationContext(), 0, new Intent() );
+            // don't know why, but the extras are only passed with a pendingIntent...
+            try{
+                Intent intent = new Intent( getApplicationContext(), MainActivity.class );
+                intent.putExtra( GcmConstants.FROM_KEY, phone );
+                PendingIntent pendingIntent = PendingIntent.getActivity( getApplicationContext(), 0, intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT );
+                pendingIntent.send( getApplicationContext(), 0, new Intent() );
 
-                }catch( PendingIntent.CanceledException e ){
-                    e.printStackTrace();
-                }
+            }catch( PendingIntent.CanceledException e ){
+                e.printStackTrace();
             }
         }
     }

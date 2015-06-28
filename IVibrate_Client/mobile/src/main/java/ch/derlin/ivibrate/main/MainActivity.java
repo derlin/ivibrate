@@ -94,8 +94,8 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
     private void setFragment( Fragment f ){
         getSupportFragmentManager().beginTransaction() //
                 .replace( R.id.container, f )  //
-                // avoid "can not perform this action after
-                // OnSaveInstanceState" error
+                        // avoid "can not perform this action after
+                        // OnSaveInstanceState" error
                 .commitAllowingStateLoss();
     }
 
@@ -283,6 +283,8 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         // if a notification was pressed, show the contact
         if( extras != null && extras.containsKey( GcmConstants.FROM_KEY ) ){
             String from = extras.getString( GcmConstants.FROM_KEY );
+            if( from == null ) return null;
+
             try( SqlDataSource src = new SqlDataSource( this, true ) ){
                 return src.getFriend( from );
 
