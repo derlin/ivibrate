@@ -10,11 +10,10 @@ import android.support.wearable.view.WatchViewStub;
 import ch.derlin.ivibrate.R;
 import ch.derlin.ivibrate.comm.ListenerService;
 import ch.derlin.ivibrate.comm.SendToPhoneService;
-import ch.derlin.ivibrate.main.frag.ContactsFragment;
-import ch.derlin.ivibrate.main.frag.PatternFragment;
-import ch.derlin.ivibrate.main.frag.TextFragment;
-import ch.derlin.ivibrate.main.frag.WaitFragment;
+import ch.derlin.ivibrate.main.frag.*;
+import ch.derlin.ivibrate.utils.Friend;
 
+import java.util.ArrayList;
 import java.util.List;
 
  /**
@@ -83,9 +82,17 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
             f = new PatternFragment();
 
         }else if( extras.containsKey( "contacts" ) ){
-            // the list of contacts has been received: show it
-            f = new ContactsFragment();
-            f.setArguments( extras );
+            List<Friend> contacts = ( ArrayList<Friend> ) extras.getSerializable( "contacts" );
+
+            if(contacts == null || contacts.size() == 0){
+                // no contacts...
+                f = new NoContactFragment();
+
+            }else{
+                // the list of contacts has been received: show it
+                f = new ContactsFragment();
+                f.setArguments( extras );
+            }
 
         }else{
             // should never happen...
