@@ -15,6 +15,9 @@ import com.google.android.gms.wearable.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import static ch.derlin.ivibrate.wear.WearableConstants.*;
+
+
 /**
  * Listen to the data changes and handle messages from the
  * wearable.
@@ -38,6 +41,8 @@ public class ListenToWearableService extends WearableListenerService{
         super.onDestroy();
     }
 
+    // ----------------------------------------------------
+
 
     @Override
     public void onDataChanged( DataEventBuffer dataEvents ){
@@ -50,59 +55,81 @@ public class ListenToWearableService extends WearableListenerService{
                 dataMap = DataMapItem.fromDataItem( event.getDataItem() ).getDataMap();
                 String path = event.getDataItem().getUri().getPath();
 
-                if( path.equals( WearableConstants.WEARABLE_TO_PHONE_DATA_PATH ) ){
-                    if( dataMap.containsKey( "result" ) ){
-                        Toast.makeText( getApplicationContext(), "PATTERN PLAYED (ack)", Toast.LENGTH_SHORT ).show();
-
-                    }else if( dataMap.containsKey( "action" ) ){
-                        doAction( dataMap.getString( "action" ), dataMap );
-                    }
+                if( path.equals( WEARABLE_TO_PHONE_DATA_PATH ) && dataMap.containsKey( ACTION_KEY ) ){
+                    doAction( dataMap.getString( ACTION_KEY ), dataMap );
                 }
 
             }
         }
     }
 
+    // ----------------------------------------------------
+
 
     /* handle a given action/message */
     private void doAction( String action, DataMap dataMap ){
 
-        if( action.equals( "send" ) ){
-            String phone = dataMap.getString( "phone" );
-            long[] pattern = dataMap.getLongArray( "pattern" );
-            String text = dataMap.getString( "text" );
+        switch( action ){
 
-            if( phone != null && pattern.length > 0 ){
-                GcmSenderService.sendMessage( phone, pattern, text );
-            }
+            case ACTION_FEEDBACK:
+                boolean ok = dataMap.getBoolean( EXTRA_STATUS );
+                String toast = ok ? "PATTERN PLAYED (ack)" : "Error on the watch...";
+                Toast.makeText( getApplicationContext(), toast, Toast.LENGTH_SHORT ).show();
+                break;
 
-        }else if( action.equals( "getContacts" ) ){
-            try( SqlDataSource src = new SqlDataSource( getApplicationContext(), true ) ){
-                ArrayList<Bundle> list = new ArrayList<>();
-                for( Friend friend : src.getFriends().values() ){
-                    Bundle dm = new Bundle();
-                    dm.putString( "phone", friend.getPhone() );
-                    dm.putString( "name", friend.getDisplayName() );
-                    list.add( dm );
-                }//end for
-                SendToWearableService.sendContacts( list );
-            }catch( SQLException e ){
-                Log.d( getPackageName(), "error retrieving friends" );
-            }
-        }else if( action.equals( "open" ) ){
-            String phone = dataMap.getString( "phone" );
+            case ACTION_GET_CONTACTS:
+                SendToWearableService.sendContacts( getContactsList() );
+                break;
 
-            // don't know why, but the extras are only passed with a pendingIntent...
-            try{
-                Intent intent = new Intent( getApplicationContext(), MainActivity.class );
-                intent.putExtra( GcmConstants.FROM_KEY, phone );
-                PendingIntent pendingIntent = PendingIntent.getActivity( getApplicationContext(), 0, intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT );
-                pendingIntent.send( getApplicationContext(), 0, new Intent() );
+            case ACTION_SEND_MSG:
+                String phone = dataMap.getString( EXTRA_PHONE );
+                long[] pattern = dataMap.getLongArray( EXTRA_PATTERN );
+                String text = dataMap.getString( EXTRA_TEXT );
 
-            }catch( PendingIntent.CanceledException e ){
-                e.printStackTrace();
-            }
+                if( phone != null && pattern.length > 0 ){
+                    GcmSenderService.sendMessage( phone, pattern, text );
+                }
+                break;
+
+            case ACTION_OPEN:
+                String number = dataMap.getString( EXTRA_PHONE );
+
+                // don't know why, but the extras are only passed with a pendingIntent...
+                try{
+                    Intent intent = new Intent( getApplicationContext(), MainActivity.class );
+                    intent.putExtra( GcmConstants.FROM_KEY, number );
+                    PendingIntent pendingIntent = PendingIntent.getActivity( getApplicationContext(), 0, intent,
+                            PendingIntent.FLAG_UPDATE_CURRENT );
+                    pendingIntent.send( getApplicationContext(), 0, new Intent() );
+
+                }catch( PendingIntent.CanceledException e ){
+                    e.printStackTrace();
+                }
+                break;
+
+            default:
+                break;
         }
+    }
+
+    // ----------------------------------------------------
+
+
+    private ArrayList<Bundle> getContactsList(){
+
+        ArrayList<Bundle> list = new ArrayList<>();
+
+        try( SqlDataSource src = new SqlDataSource( getApplicationContext(), true ) ){
+            for( Friend friend : src.getFriends().values() ){
+                Bundle dm = new Bundle();
+                dm.putString( EXTRA_PHONE, friend.getPhone() );
+                dm.putString( EXTRA_CONTACT_NAME, friend.getDisplayName() );
+                list.add( dm );
+            }//end for
+
+        }catch( SQLException e ){
+            Log.d( getPackageName(), "error retrieving friends" );
+        }
+        return list;
     }
 }

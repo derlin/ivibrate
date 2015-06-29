@@ -61,7 +61,7 @@ public class GcmReceiverService extends IntentService{
 
         // the action is the type of message (message, registration, ack...)
         String action = extras.getString( MESG_TYPE_KEY );
-        if( action == null || !action.matches( PACKAGE + ".*" ) ) return; // TODO
+        if( action == null || !action.matches( PACKAGE + ".*" ) ) return;
 
         if( ACTION_MESSAGE_RECEIVED.equals( action ) ){
             // send ack

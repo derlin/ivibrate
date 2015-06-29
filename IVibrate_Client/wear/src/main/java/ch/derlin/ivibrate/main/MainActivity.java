@@ -16,7 +16,9 @@ import ch.derlin.ivibrate.utils.Friend;
 import java.util.ArrayList;
 import java.util.List;
 
- /**
+import static ch.derlin.ivibrate.comm.WearableConstants.*;
+
+/**
   * The main activity to send a message.
   * -------------------------------------------------  <br />
   * context      Advanced Interface - IVibrate project <br />
@@ -48,7 +50,7 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
     @Override
     protected void onNewIntent( Intent intent ){
         super.onNewIntent( intent );
-        if( intent.hasExtra( "contacts" ) ){
+        if( intent.hasExtra( EXTRA_CONTACTS_LIST ) ){
             // we received the list of contacts !
             // TODO: if no contacts ?
             setInterface( intent );
@@ -72,17 +74,17 @@ public class MainActivity extends Activity implements PatternFragment.PatternFra
         if( extras == null ){
             // no phone => ask for the contact's list and show a progressbar
             SendToPhoneService.askForContacts();
-            f = WaitFragment.getInstance( "Retrieving contact's list..." );
+            f = WaitFragment.getInstance( getString( R.string.waitfragment_retrieving_contacts_text) );
             ListenerService.isWaitingForContact( true );
 
-        }else if( extras.containsKey( "phone" ) ){
+        }else if( extras.containsKey( EXTRA_PHONE ) ){
             // a reply: show the pattern fragment
-            phone = extras.getString( "phone" );
+            phone = extras.getString( EXTRA_PHONE );
             NotificationManagerCompat.from( getApplicationContext() ).cancel( Integer.parseInt( phone ) );
             f = new PatternFragment();
 
-        }else if( extras.containsKey( "contacts" ) ){
-            List<Friend> contacts = ( ArrayList<Friend> ) extras.getSerializable( "contacts" );
+        }else if( extras.containsKey( EXTRA_CONTACTS_LIST ) ){
+            List<Friend> contacts = ( ArrayList<Friend> ) extras.getSerializable( EXTRA_CONTACTS_LIST );
 
             if(contacts == null || contacts.size() == 0){
                 // no contacts...

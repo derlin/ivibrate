@@ -39,29 +39,30 @@ public class SendToWearableService extends IntentService{
 
     public static void sendPattern( long[] pattern ){
         Bundle bundle = new Bundle();
-        bundle.putLongArray( "pattern", pattern );
-        wakeUpService( bundle );
+        bundle.putLongArray( EXTRA_PATTERN, pattern );
+        wakeUpService( ACTION_PLAY_PATTERN, bundle );
     }
 
 
     public static void sendPattern( long[] pattern, Friend from ){
         Bundle bundle = new Bundle();
-        bundle.putLongArray( "pattern", pattern );
-        bundle.putString( "phone", from.getPhone() );
-        bundle.putString( "name", from.getDisplayName() );
-        wakeUpService( bundle );
+        bundle.putLongArray( EXTRA_PATTERN, pattern );
+        bundle.putString( EXTRA_PHONE, from.getPhone() );
+        bundle.putString( EXTRA_CONTACT_NAME, from.getDisplayName() );
+        wakeUpService( ACTION_PLAY_PATTERN, bundle );
     }
 
 
     public static void sendContacts( ArrayList<Bundle> details ){
         Bundle dataMap = new Bundle();
-        dataMap.putParcelableArrayList( "contacts", details );
-        wakeUpService( dataMap );
+        dataMap.putParcelableArrayList( EXTRA_CONTACTS_LIST, details );
+        wakeUpService( ACTION_GET_CONTACTS, dataMap );
     }
 
     // ----------------------------------------------------
 
-    private static void wakeUpService( Bundle data ){
+    private static void wakeUpService( String action, Bundle data ){
+        data.putString( ACTION_KEY, action );
         Intent intent = new Intent( App.getAppContext(), SendToWearableService.class );
         intent.putExtras( data );
         App.getAppContext().startService( intent );
@@ -104,7 +105,7 @@ public class SendToWearableService extends IntentService{
 
             // result feedback
             if( result.getStatus().isSuccess() ){
-                Log.v( "myTag", "DataMap: " + dataMap + " sent to: " + node.getDisplayName() );
+                Log.v( getPackageName(), "DataMap: " + dataMap + " sent to: " + node.getDisplayName() );
                 LocalBroadcastManager.getInstance( getApplicationContext() )  //
                         .sendBroadcast( getIntent( SUCCESS_EVT_TYPE, node.getDisplayName() ) );
 
@@ -113,7 +114,7 @@ public class SendToWearableService extends IntentService{
                         .sendBroadcast( getIntent( FAIL_EVT_TYPE, "Failed to send pattern to " + node.getDisplayName
                                 () ) );
                 // Log an error
-                Log.v( "myTag", "ERROR: failed to send DataMap" );
+                Log.v( getPackageName(), "ERROR: failed to send DataMap" );
             }
         }
     }

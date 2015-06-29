@@ -12,7 +12,7 @@ import com.google.android.gms.wearable.*;
 
 import java.util.Date;
 
-import static ch.derlin.ivibrate.comm.WearableConstants.WEARABLE_TO_PHONE_DATA_PATH;
+import static ch.derlin.ivibrate.comm.WearableConstants.*;
 
 /**
  * A singleton service to send data to the handheld device
@@ -38,8 +38,8 @@ public class SendToPhoneService extends IntentService {
      */
     public static void sendStatus( boolean success ){
         Bundle bundle = new Bundle();
-        bundle.putBoolean( "result", success );
-        wakeUpService( bundle );
+        bundle.putBoolean( EXTRA_STATUS, success );
+        wakeUpService(ACTION_FEEDBACK, bundle );
     }
 
 
@@ -48,9 +48,7 @@ public class SendToPhoneService extends IntentService {
      * contacts.
      */
     public static void askForContacts(){
-        Bundle bundle = new Bundle();
-        bundle.putString( "action", "getContacts" );
-        wakeUpService( bundle );
+        wakeUpService( ACTION_GET_CONTACTS, new Bundle() );
     }
 
 
@@ -63,14 +61,13 @@ public class SendToPhoneService extends IntentService {
      */
     public static void send( String phone, long[] pattern, String text ){
         Bundle bundle = new Bundle();
-        bundle.putString( "action", "send" );
-        bundle.putString( "phone", phone );
-        bundle.putLongArray( "pattern", pattern );
-        bundle.putString( "text", text );
+        bundle.putString( EXTRA_PHONE, phone );
+        bundle.putLongArray( EXTRA_PATTERN, pattern );
+        bundle.putString( EXTRA_TEXT, text );
 
         bundle.putString( "toast", "IVibrate, vibe sent"  );
 
-        wakeUpService( bundle);
+        wakeUpService( ACTION_SEND_MSG, bundle);
 
     }
 
@@ -83,14 +80,14 @@ public class SendToPhoneService extends IntentService {
      */
     public static void askOpenApp( String phone ){
         Bundle bundle = new Bundle();
-        bundle.putString( "action", "open" );
-        bundle.putString( "phone", phone );
-        wakeUpService( bundle );
+        bundle.putString( EXTRA_PHONE, phone );
+        wakeUpService( ACTION_OPEN, bundle );
     }
 
     // ----------------------------------------------------
 
-    private static void wakeUpService( Bundle data ){
+    private static void wakeUpService( String action, Bundle data ){
+        data.putString( ACTION_KEY, action );
         Intent intent = new Intent( App.getAppContext(), SendToPhoneService.class );
         intent.putExtras( data );
         App.getAppContext().startService( intent );

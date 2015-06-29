@@ -18,6 +18,8 @@ import com.google.android.gms.wearable.*;
 
 import java.util.ArrayList;
 
+import static ch.derlin.ivibrate.comm.WearableConstants.*;
+
 /**
  * Listener service to communicate with the handheld device.
  * The communication is made through data events on the data layer.
@@ -51,33 +53,49 @@ public class ListenerService extends WearableListenerService{
 
                 if( path.equals( WearableConstants.PHONE_TO_WEARABLE_DATA_PATH ) ){
                     // this is for us
-                    if( dataMap.containsKey( "pattern" ) ){
-                        // a pattern was sent (either received or replayed)
-                        playPattern( dataMap.getLongArray( "pattern" ), //
-                                dataMap.getString( "phone" ),   //
-                                dataMap.getString( "name" )   //
-                        );
 
-                    }else if( dataMap.containsKey( "contacts" ) ){
-                        // a query of the list of contacts
-                        if( mShouldMainActivityBeCalled ){
-                            mShouldMainActivityBeCalled = false;
-                            handleContactsList( dataMap );
-                        } // else, main activity was dismissed by the user => do nothing
+                    String action = dataMap.getString( ACTION_KEY );
+
+                    if( action != null ){
+                        doAction( action, dataMap );
+
+                    }else{
+                        SendToPhoneService.sendStatus( false );
+                        Log.d( "wearable", "wearable - no action specified - event type " + event.getType() );
                     }
+
+                    Log.v( "wearable", "DataMap received on watch: " + dataMap );
                 }
-
-                Log.v( "wearable", "DataMap received on watch: " + dataMap );
-
-            }else{
-                SendToPhoneService.sendStatus( false );
-                Log.d( "wearable", "event type " + event.getType() );
-
             }
         }
     }
 
     // ----------------------------------------------------
+
+
+    private void doAction( String action, DataMap dataMap ){
+
+        switch( action ){
+            case ACTION_PLAY_PATTERN:
+                playPattern( dataMap.getLongArray( EXTRA_PATTERN ), //
+                        dataMap.getString( EXTRA_PHONE ),   //
+                        dataMap.getString( EXTRA_CONTACT_NAME )   //
+                );
+                break;
+
+            case ACTION_GET_CONTACTS:
+                // a query of the list of contacts
+                if( mShouldMainActivityBeCalled ){
+                    mShouldMainActivityBeCalled = false;
+                    handleContactsList( dataMap );
+                } // else, main activity was dismissed by the user => do nothing
+                break;
+
+            default:
+                break;
+        }
+
+    }
 
 
     private void handleContactsList( DataMap dataMap ){
@@ -91,7 +109,7 @@ public class ListenerService extends WearableListenerService{
 
         // pass the list to the main activity
         Bundle bundle = new Bundle();
-        bundle.putSerializable( "contacts", contacts );
+        bundle.putSerializable( EXTRA_CONTACTS_LIST, contacts );
         Intent intent = new Intent( this, MainActivity.class );
         intent.putExtras( bundle );
         intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP );

@@ -180,7 +180,6 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         public void onAccountsReceived( String[] accounts ){
             mAvailableContacts = getAvailableContacts( accounts );
             if( mNewConvPending ){
-                // TODO
                 Log.d( getPackageName(), App.getGson().toJson( mAvailableContacts ) );
                 mNewConvPending = false;
                 addConversation();

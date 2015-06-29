@@ -1,5 +1,6 @@
 package ch.derlin.ivibrate.utils;
 
+import ch.derlin.ivibrate.comm.WearableConstants;
 import com.google.android.gms.wearable.DataMap;
 
 import java.io.Serializable;
@@ -17,8 +18,8 @@ public class Friend implements Serializable{
     }
 
     public Friend(DataMap map){
-        this.phone = map.getString( "phone" );
-        this.name = map.getString( "name" );
+        this.phone = map.getString( WearableConstants.EXTRA_PHONE );
+        this.name = map.getString( WearableConstants.EXTRA_CONTACT_NAME );
     }
 
 
