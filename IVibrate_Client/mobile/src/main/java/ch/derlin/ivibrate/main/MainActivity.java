@@ -141,6 +141,16 @@ public class MainActivity extends ActionBarActivity implements OneConvFragment.O
         }
     }
 
+
+    @Override
+    public void onBackPressed(){
+        if(mOneConvFragment != null){
+            onBackToFriendsList();
+        }else{
+            super.onBackPressed();
+        }
+    }
+
     /* *****************************************************************
      * Wearable callbacks
      * ****************************************************************/
