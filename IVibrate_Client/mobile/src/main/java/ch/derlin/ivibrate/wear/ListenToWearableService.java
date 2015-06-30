@@ -4,7 +4,6 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 import ch.derlin.ivibrate.gcm.GcmConstants;
 import ch.derlin.ivibrate.gcm.GcmSenderService;
 import ch.derlin.ivibrate.main.MainActivity;
@@ -74,7 +73,8 @@ public class ListenToWearableService extends WearableListenerService{
             case ACTION_FEEDBACK:
                 boolean ok = dataMap.getBoolean( EXTRA_STATUS );
                 String toast = ok ? "PATTERN PLAYED (ack)" : "Error on the watch...";
-                Toast.makeText( getApplicationContext(), toast, Toast.LENGTH_SHORT ).show();
+                Log.d( getPackageName(), toast );
+//                Toast.makeText( getApplicationContext(), toast, Toast.LENGTH_SHORT ).show();
                 break;
 
             case ACTION_GET_CONTACTS:
