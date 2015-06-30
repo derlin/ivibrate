@@ -35,12 +35,25 @@ public class AckProcessor implements IPayloadProcessor{
             String to = dao.getRegistrationId( account );  // "0764143203" );// TODO
             String from = dao.getName( msg.getFromRegid() );
 
-            Map<String, String> payload = msg.getPayload();
-            payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_ACK );
-            payload.put( GcmConstants.FROM_KEY, from );
-            String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
-            CcsClient.getInstance().send( jsonRequest );
+            if( from == null ){
+                String phone = msg.getPhone();
+                if( phone != null && msg.getFromRegid() != null ){
+                    dao.addAccount( phone, msg.getFromRegid() );
+                    from = phone;
+                }else{
+                    msg.getPayload().put( GcmConstants.ERROR_KEY, GcmConstants.FROM_KEY );
+                    new NackProcessor().handleMessage( msg );
+                }
 
+            }else{
+
+                Map<String, String> payload = msg.getPayload();
+                payload.put( GcmConstants.MESG_TYPE_KEY, GcmConstants.ACTION_ACK );
+                payload.put( GcmConstants.FROM_KEY, from );
+                String jsonRequest = CcsClient.createJsonMessage( to, dao.getUniqueMessageId(), payload );
+                CcsClient.getInstance().send( jsonRequest );
+
+            }
         }catch( Exception e ){
             System.err.println( "Error " + e );
         }

@@ -386,7 +386,7 @@ public class CcsClient{
         config.setDebuggerEnabled( mDebuggable );
 
         // -Dsmack.debugEnabled=true
-        XMPPConnection.DEBUG_ENABLED = true;
+        // XMPPConnection.DEBUG_ENABLED = false;
 
         connection = new XMPPConnection( config );
         connection.connect();
@@ -498,6 +498,8 @@ public class CcsClient{
 
         try{
             ccsClient.connect();
+            while(true);
+
         }catch( XMPPException e ){
             e.printStackTrace();
         }

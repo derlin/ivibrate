@@ -34,7 +34,7 @@ public class AccountsManager{
     }
 
 
-    private static void initDB(){
+    public static void initDB(){
         Connection c;
         Statement stmt;
         try{
@@ -132,7 +132,10 @@ public class AccountsManager{
 
 
     public synchronized boolean addAccount( String name, String regid ){
-        if(name == null || regid == null) return false;
+        if(name == null || regid == null){
+            System.err.println( "add acccount: name or regid null" );
+            return false;
+        }
 
         if( users.containsKey( name ) ){
             if( users.get( name ).equals( regid ) ) return true;
@@ -170,6 +173,7 @@ public class AccountsManager{
     public synchronized boolean updateRegid( String name, String regid ){
 
         if( name == null || regid == null){
+            System.err.println( "update regid: name or regid null" );
             return false;
         }
 
@@ -207,6 +211,7 @@ public class AccountsManager{
         String name = regIds.get( regid );
 
         if( name == null ){
+            System.err.println( "removeAccount: name null." );
             return false;
         }
 
